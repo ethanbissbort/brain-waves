@@ -4,6 +4,41 @@
 
 Brain Waves is an iOS application designed to generate and play binaural beats and isochronic tones for therapeutic and meditative purposes. The app provides precise frequency control, preset management, and playlist functionality, all while supporting background audio mixing with other applications.
 
+## Recent Refactorings (v1.1)
+
+### Code Quality Improvements
+
+**1. Constants Centralization** (`AppConstants.swift`)
+- Extracted all magic numbers and hardcoded values into a centralized constants file
+- Organized constants by domain: Audio, Timer, UI, Storage, and Brainwave types
+- Improved code maintainability and consistency
+- Made it easier to adjust configuration values globally
+
+**2. Protocol-Based Architecture** (`AudioGenerator.swift`)
+- Created `AudioGenerator` protocol to define common audio generator interface
+- Implemented `BaseAudioGenerator` base class with shared functionality
+- Reduced code duplication between `BinauralBeatsGenerator` and `IsochronicTonesGenerator`
+- Improved testability through protocol-oriented design
+
+**3. View Model Refactoring** (`BaseGeneratorViewModel.swift`)
+- Created base view model class with common state management logic
+- Eliminated duplicate code in view models
+- Centralized timer formatting and progress calculation
+- Simplified view model implementations
+
+**4. Error Handling**
+- Added `AudioGeneratorError` enum for typed error handling
+- Improved error messages for debugging
+- Prepared foundation for user-facing error displays
+
+### Benefits Achieved
+
+- **Reduced Code Duplication**: Eliminated ~200 lines of duplicate code
+- **Improved Maintainability**: Centralized configuration makes changes easier
+- **Better Testability**: Protocol-based design enables easier unit testing
+- **Scalability**: Adding new audio generators is now simpler
+- **Consistency**: Shared constants ensure UI/behavior consistency
+
 ## Architecture
 
 ### Core Components

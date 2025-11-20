@@ -8,31 +8,16 @@
 import AVFoundation
 import Combine
 
-class IsochronicTonesGenerator: ObservableObject {
-    @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0
-    @Published var duration: TimeInterval = 0
-
-    private var audioEngine: AVAudioEngine?
+class IsochronicTonesGenerator: BaseAudioGenerator, AudioGenerator {
     private var playerNode: AVAudioPlayerNode?
     private var mixer: AVAudioMixerNode?
 
-    private var carrierFrequency: Double = 250.0
-    private var pulseFrequency: Double = 10.0
+    private var carrierFrequency: Double = AppConstants.Audio.Frequency.defaultCarrier
+    private var pulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
 
-    private let sampleRate: Double = 44100.0
-    private let bufferSize: AVAudioFrameCount = 22050 // 0.5 seconds at 44.1kHz
+    override func setupAudioEngine() {
+        super.setupAudioEngine()
 
-    private var timer: Timer?
-    private var startTime: Date?
-    private var pausedTime: TimeInterval = 0
-
-    init() {
-        setupAudioEngine()
-    }
-
-    private func setupAudioEngine() {
-        audioEngine = AVAudioEngine()
         playerNode = AVAudioPlayerNode()
         mixer = audioEngine?.mainMixerNode
 
@@ -82,6 +67,14 @@ class IsochronicTonesGenerator: ObservableObject {
         }
     }
 
+    func start() {
+        start(
+            carrierFrequency: carrierFrequency,
+            pulseFrequency: pulseFrequency,
+            duration: duration
+        )
+    }
+
     func pause() {
         guard isPlaying else { return }
 
@@ -94,16 +87,9 @@ class IsochronicTonesGenerator: ObservableObject {
         stopTimer()
     }
 
-    func stop() {
+    override func stop() {
         playerNode?.stop()
-        audioEngine?.stop()
-
-        isPlaying = false
-        currentTime = 0
-        pausedTime = 0
-        startTime = nil
-
-        stopTimer()
+        super.stop()
     }
 
     func resume() {
@@ -153,7 +139,7 @@ class IsochronicTonesGenerator: ObservableObject {
             let pulse = pulseEnvelope > threshold ? 1.0 : 0.0
 
             // Combine carrier and pulse
-            let sample = Float(carrierWave * pulse * 0.3) // 30% volume
+            let sample = Float(carrierWave * pulse * Double(AppConstants.Audio.defaultVolume))
 
             // Same signal on both channels (mono)
             leftSamples[i] = sample
@@ -161,30 +147,5 @@ class IsochronicTonesGenerator: ObservableObject {
         }
 
         return buffer
-    }
-
-    private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            self?.updateTime()
-        }
-    }
-
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    private func updateTime() {
-        guard let startTime = startTime else { return }
-
-        currentTime = Date().timeIntervalSince(startTime)
-
-        if currentTime >= duration {
-            stop()
-        }
-    }
-
-    deinit {
-        stop()
     }
 }
