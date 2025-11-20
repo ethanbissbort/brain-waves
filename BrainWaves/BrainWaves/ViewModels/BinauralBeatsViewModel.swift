@@ -8,33 +8,29 @@
 import Foundation
 import Combine
 
-class BinauralBeatsViewModel: ObservableObject {
-    @Published var baseFrequency: Double = 200.0
-    @Published var beatFrequency: Double = 10.0
-    @Published var duration: TimeInterval = 600.0 // 10 minutes default
-    @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0
-    @Published var showingSavePreset = false
-    @Published var presetName = ""
+class BinauralBeatsViewModel: BaseGeneratorViewModel {
+    @Published var baseFrequency: Double = AppConstants.Audio.Frequency.defaultBase
+    @Published var beatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
+    @Published var volume: Float = AppConstants.Audio.defaultVolume
 
     private let generator = BinauralBeatsGenerator()
-    private let presetStore = PresetStore.shared
-    private var cancellables = Set<AnyCancellable>()
 
     // Frequency constraints
-    let baseFrequencyRange: ClosedRange<Double> = 100...500
-    let beatFrequencyRange: ClosedRange<Double> = 0.5...100
+    let baseFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.baseMin...AppConstants.Audio.Frequency.baseMax
+    let beatFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.beatMin...AppConstants.Audio.Frequency.beatMax
 
-    // Duration presets (in seconds)
-    let durationPresets: [TimeInterval] = [300, 600, 900, 1800, 3600] // 5, 10, 15, 30, 60 minutes
+    override init() {
+        super.init()
 
-    init() {
         // Subscribe to generator state
         generator.$isPlaying
             .assign(to: &$isPlaying)
 
         generator.$currentTime
             .assign(to: &$currentTime)
+
+        generator.$duration
+            .assign(to: &$duration)
     }
 
     func play() {
@@ -55,10 +51,6 @@ class BinauralBeatsViewModel: ObservableObject {
 
     func resume() {
         generator.resume()
-    }
-
-    func setDuration(_ duration: TimeInterval) {
-        self.duration = duration
     }
 
     func savePreset() {
@@ -82,35 +74,12 @@ class BinauralBeatsViewModel: ObservableObject {
         duration = preset.duration
     }
 
-    var remainingTime: TimeInterval {
-        max(0, duration - currentTime)
-    }
-
-    var progress: Double {
-        guard duration > 0 else { return 0 }
-        return min(currentTime / duration, 1.0)
-    }
-
-    func formatTime(_ time: TimeInterval) -> String {
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        return String(format: "%02d:%02d", minutes, seconds)
-    }
-
     func getBrainwaveType() -> String {
-        switch beatFrequency {
-        case 0..<4:
-            return "Delta - Deep Sleep"
-        case 4..<8:
-            return "Theta - Meditation"
-        case 8..<14:
-            return "Alpha - Relaxation"
-        case 14..<30:
-            return "Beta - Focus"
-        case 30...100:
-            return "Gamma - Peak Awareness"
-        default:
-            return "Custom"
-        }
+        AppConstants.BrainwaveType.type(for: beatFrequency).rawValue
+    }
+
+    func setVolume(_ newVolume: Float) {
+        volume = max(0.0, min(1.0, newVolume))
+        generator.setVolume(volume)
     }
 }

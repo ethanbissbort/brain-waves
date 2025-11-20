@@ -8,33 +8,29 @@
 import Foundation
 import Combine
 
-class IsochronicTonesViewModel: ObservableObject {
-    @Published var carrierFrequency: Double = 250.0
-    @Published var pulseFrequency: Double = 10.0
-    @Published var duration: TimeInterval = 600.0 // 10 minutes default
-    @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0
-    @Published var showingSavePreset = false
-    @Published var presetName = ""
+class IsochronicTonesViewModel: BaseGeneratorViewModel {
+    @Published var carrierFrequency: Double = AppConstants.Audio.Frequency.defaultCarrier
+    @Published var pulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
+    @Published var volume: Float = AppConstants.Audio.defaultVolume
 
     private let generator = IsochronicTonesGenerator()
-    private let presetStore = PresetStore.shared
-    private var cancellables = Set<AnyCancellable>()
 
     // Frequency constraints
-    let carrierFrequencyRange: ClosedRange<Double> = 100...500
-    let pulseFrequencyRange: ClosedRange<Double> = 0.5...100
+    let carrierFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.baseMin...AppConstants.Audio.Frequency.baseMax
+    let pulseFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.beatMin...AppConstants.Audio.Frequency.beatMax
 
-    // Duration presets (in seconds)
-    let durationPresets: [TimeInterval] = [300, 600, 900, 1800, 3600] // 5, 10, 15, 30, 60 minutes
+    override init() {
+        super.init()
 
-    init() {
         // Subscribe to generator state
         generator.$isPlaying
             .assign(to: &$isPlaying)
 
         generator.$currentTime
             .assign(to: &$currentTime)
+
+        generator.$duration
+            .assign(to: &$duration)
     }
 
     func play() {
@@ -55,10 +51,6 @@ class IsochronicTonesViewModel: ObservableObject {
 
     func resume() {
         generator.resume()
-    }
-
-    func setDuration(_ duration: TimeInterval) {
-        self.duration = duration
     }
 
     func savePreset() {
@@ -82,35 +74,27 @@ class IsochronicTonesViewModel: ObservableObject {
         duration = preset.duration
     }
 
-    var remainingTime: TimeInterval {
-        max(0, duration - currentTime)
-    }
-
-    var progress: Double {
-        guard duration > 0 else { return 0 }
-        return min(currentTime / duration, 1.0)
-    }
-
-    func formatTime(_ time: TimeInterval) -> String {
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        return String(format: "%02d:%02d", minutes, seconds)
-    }
-
     func getBrainwaveType() -> String {
-        switch pulseFrequency {
-        case 0..<4:
+        // Custom descriptions for isochronic tones
+        let baseType = AppConstants.BrainwaveType.type(for: pulseFrequency)
+        switch baseType {
+        case .delta:
             return "Delta - Deep Relaxation"
-        case 4..<8:
+        case .theta:
             return "Theta - Creative Flow"
-        case 8..<14:
+        case .alpha:
             return "Alpha - Calmness"
-        case 14..<30:
+        case .beta:
             return "Beta - Concentration"
-        case 30...100:
+        case .gamma:
             return "Gamma - High Focus"
-        default:
+        case .custom:
             return "Custom"
         }
+    }
+
+    func setVolume(_ newVolume: Float) {
+        volume = max(0.0, min(1.0, newVolume))
+        generator.setVolume(volume)
     }
 }

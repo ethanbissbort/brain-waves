@@ -27,6 +27,7 @@ class BaseAudioGenerator: ObservableObject {
     @Published var isPlaying = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
+    @Published var volume: Float = AppConstants.Audio.defaultVolume
 
     var audioEngine: AVAudioEngine?
     let sampleRate: Double = AppConstants.Audio.sampleRate
@@ -42,6 +43,16 @@ class BaseAudioGenerator: ObservableObject {
 
     func setupAudioEngine() {
         audioEngine = AVAudioEngine()
+    }
+
+    func setVolume(_ newVolume: Float) {
+        volume = max(0.0, min(1.0, newVolume))
+        updateVolume()
+    }
+
+    // Override this in subclasses to update volume for active playback
+    func updateVolume() {
+        // Default implementation - subclasses can override
     }
 
     func startTimer() {

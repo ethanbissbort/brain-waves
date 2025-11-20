@@ -15,6 +15,10 @@ class IsochronicTonesGenerator: BaseAudioGenerator, AudioGenerator {
     private var carrierFrequency: Double = AppConstants.Audio.Frequency.defaultCarrier
     private var pulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
 
+    override func updateVolume() {
+        playerNode?.volume = volume
+    }
+
     override func setupAudioEngine() {
         super.setupAudioEngine()
 
@@ -55,6 +59,9 @@ class IsochronicTonesGenerator: BaseAudioGenerator, AudioGenerator {
 
             // Schedule initial buffers
             scheduleBuffers()
+
+            // Set initial volume
+            playerNode?.volume = volume
 
             playerNode?.play()
 

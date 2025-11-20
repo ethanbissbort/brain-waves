@@ -28,12 +28,11 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - Removed duplicate timer and playback management code
   - Improved maintainability and testability
 
-#### In Progress 🔄
-- [ ] **View Model Base Class**
-  - Create `BaseGeneratorViewModel` with common functionality
-  - Refactor `BinauralBeatsViewModel` to extend base
-  - Refactor `IsochronicTonesViewModel` to extend base
-  - Reduce code duplication in state management
+- [x] **View Model Base Class**
+  - Created `BaseGeneratorViewModel` with common functionality
+  - Refactored `BinauralBeatsViewModel` to extend base
+  - Refactored `IsochronicTonesViewModel` to extend base
+  - Reduced code duplication in state management
 
 #### Planned 📋
 - [ ] **Dependency Injection**
@@ -83,12 +82,14 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
 
 ### 2.1 Audio Improvements (High Priority)
 
-#### Volume Control
-- [ ] **Global Volume Control**
-  - Add volume slider to each generator view
-  - Persist volume preference
-  - Implement fade-in/fade-out effects
-  - Add mute button
+#### Volume Control ✅
+- [x] **Global Volume Control**
+  - Added volume slider to each generator view with mute button
+  - Volume control integrated in audio generators
+  - Real-time volume adjustment during playback
+  - Visual volume indicator with dynamic speaker icons
+  - [ ] Persist volume preference (planned)
+  - [ ] Implement fade-in/fade-out effects (planned)
 
 #### Advanced Audio Features
 - [ ] **Waveform Selection**
@@ -150,6 +151,11 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
 ### 2.3 Preset & Playlist Improvements
 
 #### Enhanced Preset Management
+- [x] **Preset Loading Across Tabs**
+  - Created `PresetCoordinator` for cross-tab communication
+  - Tap preset in Presets view to automatically load in generator view
+  - Seamless navigation between tabs when loading presets
+
 - [ ] **Preset Categories**
   - Organize presets by purpose (sleep, focus, meditation)
   - Add custom tags
@@ -446,7 +452,7 @@ We welcome contributions! Priority areas for community involvement:
 
 ## Changelog
 
-### v1.0.0 (Current)
+### v1.0.0
 - Initial release
 - Binaural beats generation
 - Isochronic tones generation
@@ -454,12 +460,28 @@ We welcome contributions! Priority areas for community involvement:
 - Playlist functionality
 - Background audio support
 
-### v1.1.0 (Planned)
-- Code refactoring and optimization
-- Volume control
-- Improved error handling
-- Enhanced UI components
-- Bug fixes
+### v1.1.0 (Current)
+- **Code Refactoring**:
+  - Constants centralization with `AppConstants.swift`
+  - Protocol-based audio generator architecture
+  - Base view model implementation
+  - Reduced code duplication by ~300 lines
+- **New Features**:
+  - Volume control with mute button on all generators
+  - Real-time volume adjustment during playback
+  - Preset loading across tabs with automatic navigation
+  - PresetCoordinator for seamless cross-tab communication
+- **Improvements**:
+  - Better code organization and maintainability
+  - Centralized brainwave type detection
+  - Enhanced UI components with visual feedback
+
+### v1.2.0 (Planned)
+- Fade in/out effects
+- Volume preference persistence
+- Enhanced error handling with user alerts
+- Waveform visualization
+- Dark mode optimization
 
 ---
 

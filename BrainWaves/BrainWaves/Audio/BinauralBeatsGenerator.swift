@@ -16,6 +16,11 @@ class BinauralBeatsGenerator: BaseAudioGenerator, AudioGenerator {
     private var baseFrequency: Double = AppConstants.Audio.Frequency.defaultBase
     private var beatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
 
+    override func updateVolume() {
+        leftPlayerNode?.volume = volume
+        rightPlayerNode?.volume = volume
+    }
+
     override func setupAudioEngine() {
         super.setupAudioEngine()
 
@@ -66,6 +71,10 @@ class BinauralBeatsGenerator: BaseAudioGenerator, AudioGenerator {
 
             // Schedule initial buffers
             scheduleBuffers()
+
+            // Set initial volume
+            leftPlayerNode?.volume = volume
+            rightPlayerNode?.volume = volume
 
             leftPlayerNode?.play()
             rightPlayerNode?.play()

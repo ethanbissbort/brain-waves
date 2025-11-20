@@ -9,6 +9,8 @@ import SwiftUI
 
 struct PresetsView: View {
     @ObservedObject var presetStore = PresetStore.shared
+    @EnvironmentObject var presetCoordinator: PresetCoordinator
+    @Binding var selectedTab: Int
     @State private var selectedSegment = 0
 
     var body: some View {
@@ -22,9 +24,15 @@ struct PresetsView: View {
                 .padding()
 
                 if selectedSegment == 0 {
-                    BinauralPresetsListView(presets: presetStore.binauralPresets)
+                    BinauralPresetsListView(
+                        presets: presetStore.binauralPresets,
+                        selectedTab: $selectedTab
+                    )
                 } else {
-                    IsochronicPresetsListView(presets: presetStore.isochronicPresets)
+                    IsochronicPresetsListView(
+                        presets: presetStore.isochronicPresets,
+                        selectedTab: $selectedTab
+                    )
                 }
             }
             .navigationTitle("Presets")
@@ -35,15 +43,14 @@ struct PresetsView: View {
 struct BinauralPresetsListView: View {
     let presets: [BinauralBeatPreset]
     @ObservedObject var presetStore = PresetStore.shared
-    @State private var selectedPreset: BinauralBeatPreset?
-    @State private var showingLoadConfirmation = false
+    @EnvironmentObject var presetCoordinator: PresetCoordinator
+    @Binding var selectedTab: Int
 
     var body: some View {
         List {
             ForEach(presets) { preset in
                 Button(action: {
-                    selectedPreset = preset
-                    showingLoadConfirmation = true
+                    presetCoordinator.selectBinauralPreset(preset)
                 }) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(preset.name)
@@ -81,17 +88,6 @@ struct BinauralPresetsListView: View {
                 }
             }
         }
-        .alert("Load Preset", isPresented: $showingLoadConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Load") {
-                // This would need to communicate with the BinauralBeatsView
-                // For now, we'll just dismiss
-            }
-        } message: {
-            if let preset = selectedPreset {
-                Text("Go to Binaural Beats tab and load '\(preset.name)'?")
-            }
-        }
     }
 
     private func formatDuration(_ duration: TimeInterval) -> String {
@@ -103,15 +99,14 @@ struct BinauralPresetsListView: View {
 struct IsochronicPresetsListView: View {
     let presets: [IsochronicTonePreset]
     @ObservedObject var presetStore = PresetStore.shared
-    @State private var selectedPreset: IsochronicTonePreset?
-    @State private var showingLoadConfirmation = false
+    @EnvironmentObject var presetCoordinator: PresetCoordinator
+    @Binding var selectedTab: Int
 
     var body: some View {
         List {
             ForEach(presets) { preset in
                 Button(action: {
-                    selectedPreset = preset
-                    showingLoadConfirmation = true
+                    presetCoordinator.selectIsochronicPreset(preset)
                 }) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(preset.name)
@@ -147,17 +142,6 @@ struct IsochronicPresetsListView: View {
                         Label("Delete", systemImage: "trash")
                     }
                 }
-            }
-        }
-        .alert("Load Preset", isPresented: $showingLoadConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Load") {
-                // This would need to communicate with the IsochronicTonesView
-                // For now, we'll just dismiss
-            }
-        } message: {
-            if let preset = selectedPreset {
-                Text("Go to Isochronic Tones tab and load '\(preset.name)'?")
             }
         }
     }

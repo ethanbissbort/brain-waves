@@ -9,6 +9,7 @@ import SwiftUI
 
 struct BinauralBeatsView: View {
     @StateObject private var viewModel = BinauralBeatsViewModel()
+    @EnvironmentObject var presetCoordinator: PresetCoordinator
 
     var body: some View {
         NavigationView {
@@ -38,6 +39,12 @@ struct BinauralBeatsView: View {
                         unit: "Hz"
                     )
                     .disabled(viewModel.isPlaying)
+
+                    // Volume Control
+                    VolumeControl(
+                        volume: $viewModel.volume,
+                        onVolumeChange: viewModel.setVolume
+                    )
 
                     // Frequency explanation
                     VStack(alignment: .leading, spacing: 8) {
@@ -101,6 +108,19 @@ struct BinauralBeatsView: View {
                     onSave: viewModel.savePreset
                 )
             }
+            .onAppear {
+                loadPresetIfSelected()
+            }
+            .onChange(of: presetCoordinator.selectedBinauralPreset) { _ in
+                loadPresetIfSelected()
+            }
+        }
+    }
+
+    private func loadPresetIfSelected() {
+        if let preset = presetCoordinator.selectedBinauralPreset {
+            viewModel.loadPreset(preset)
+            presetCoordinator.clearBinauralPreset()
         }
     }
 }
