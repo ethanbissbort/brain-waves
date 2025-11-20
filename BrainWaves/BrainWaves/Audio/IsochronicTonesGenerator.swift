@@ -60,13 +60,14 @@ class IsochronicTonesGenerator: BaseAudioGenerator, AudioGenerator {
             // Schedule initial buffers
             scheduleBuffers()
 
-            // Set initial volume
-            playerNode?.volume = volume
-
             playerNode?.play()
 
             isPlaying = true
             startTime = Date().addingTimeInterval(-pausedTime)
+
+            // Start with fade in effect
+            let savedVolume = volume
+            fadeIn(to: savedVolume)
 
             startTimer()
         } catch {

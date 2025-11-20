@@ -64,6 +64,15 @@ enum AppConstants {
         static let isochronicPresetsKey = "saved_isochronic_presets"
         static let playlistsKey = "playlists"
         static let lastUsedSettingsKey = "last_used_settings"
+        static let volumePreferenceKey = "user_volume_preference"
+    }
+
+    // MARK: - Audio Effects
+
+    enum AudioEffects {
+        static let fadeInDuration: TimeInterval = 2.0
+        static let fadeOutDuration: TimeInterval = 2.0
+        static let fadeSmoothness: TimeInterval = 0.1 // Update interval for smooth fade
     }
 
     // MARK: - Brainwave Types

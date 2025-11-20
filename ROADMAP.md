@@ -88,8 +88,8 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - Volume control integrated in audio generators
   - Real-time volume adjustment during playback
   - Visual volume indicator with dynamic speaker icons
-  - [ ] Persist volume preference (planned)
-  - [ ] Implement fade-in/fade-out effects (planned)
+  - [x] Persist volume preference with SettingsManager
+  - [x] Fade-in/fade-out effects implemented
 
 #### Advanced Audio Features
 - [ ] **Waveform Selection**
@@ -460,7 +460,7 @@ We welcome contributions! Priority areas for community involvement:
 - Playlist functionality
 - Background audio support
 
-### v1.1.0 (Current)
+### v1.1.0
 - **Code Refactoring**:
   - Constants centralization with `AppConstants.swift`
   - Protocol-based audio generator architecture
@@ -476,9 +476,22 @@ We welcome contributions! Priority areas for community involvement:
   - Centralized brainwave type detection
   - Enhanced UI components with visual feedback
 
-### v1.2.0 (Planned)
-- Fade in/out effects
-- Volume preference persistence
+### v1.2.0 (Current)
+- **Audio Enhancements**:
+  - Fade-in effects on playback start (2-second smooth transition)
+  - Fade-out support with completion handlers
+  - Timer-based linear interpolation for smooth volume transitions
+- **User Experience**:
+  - Comprehensive haptic feedback system (`HapticManager`)
+  - Tactile feedback for play, pause, stop actions
+  - Preset load feedback with selection haptics
+  - Timer completion with dual haptic notification
+- **Persistence**:
+  - Volume preference persistence with `SettingsManager`
+  - UserDefaults integration for settings
+  - Automatic volume restoration on app launch
+
+### v1.3.0 (Planned)
 - Enhanced error handling with user alerts
 - Waveform visualization
 - Dark mode optimization
