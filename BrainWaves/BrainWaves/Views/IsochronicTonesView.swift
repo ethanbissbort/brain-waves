@@ -9,6 +9,7 @@ import SwiftUI
 
 struct IsochronicTonesView: View {
     @StateObject private var viewModel = IsochronicTonesViewModel()
+    @EnvironmentObject var presetCoordinator: PresetCoordinator
 
     var body: some View {
         NavigationView {
@@ -38,6 +39,12 @@ struct IsochronicTonesView: View {
                         unit: "Hz"
                     )
                     .disabled(viewModel.isPlaying)
+
+                    // Volume Control
+                    VolumeControl(
+                        volume: $viewModel.volume,
+                        onVolumeChange: viewModel.setVolume
+                    )
 
                     // Frequency explanation
                     VStack(alignment: .leading, spacing: 8) {
@@ -105,6 +112,19 @@ struct IsochronicTonesView: View {
                     onSave: viewModel.savePreset
                 )
             }
+            .onAppear {
+                loadPresetIfSelected()
+            }
+            .onChange(of: presetCoordinator.selectedIsochronicPreset) { _ in
+                loadPresetIfSelected()
+            }
+        }
+    }
+
+    private func loadPresetIfSelected() {
+        if let preset = presetCoordinator.selectedIsochronicPreset {
+            viewModel.loadPreset(preset)
+            presetCoordinator.clearIsochronicPreset()
         }
     }
 }

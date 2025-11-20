@@ -9,30 +9,47 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var audioSessionManager = AudioSessionManager.shared
+    @StateObject private var presetCoordinator = PresetCoordinator.shared
+    @State private var selectedTab = 0
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             BinauralBeatsView()
                 .tabItem {
                     Label("Binaural Beats", systemImage: "waveform.path")
                 }
+                .tag(0)
 
             IsochronicTonesView()
                 .tabItem {
                     Label("Isochronic Tones", systemImage: "waveform")
                 }
+                .tag(1)
 
-            PresetsView()
+            PresetsView(selectedTab: $selectedTab)
                 .tabItem {
                     Label("Presets", systemImage: "bookmark.fill")
                 }
+                .tag(2)
 
             PlaylistView()
                 .tabItem {
                     Label("Playlists", systemImage: "list.bullet")
                 }
+                .tag(3)
         }
         .accentColor(.blue)
+        .environmentObject(presetCoordinator)
+        .onChange(of: presetCoordinator.shouldNavigateToBinaural) { shouldNavigate in
+            if shouldNavigate {
+                selectedTab = 0
+            }
+        }
+        .onChange(of: presetCoordinator.shouldNavigateToIsochronic) { shouldNavigate in
+            if shouldNavigate {
+                selectedTab = 1
+            }
+        }
     }
 }
 

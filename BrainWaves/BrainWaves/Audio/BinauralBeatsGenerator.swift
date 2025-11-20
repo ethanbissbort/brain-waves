@@ -8,32 +8,22 @@
 import AVFoundation
 import Combine
 
-class BinauralBeatsGenerator: ObservableObject {
-    @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0
-    @Published var duration: TimeInterval = 0
-
-    private var audioEngine: AVAudioEngine?
+class BinauralBeatsGenerator: BaseAudioGenerator, AudioGenerator {
     private var leftPlayerNode: AVAudioPlayerNode?
     private var rightPlayerNode: AVAudioPlayerNode?
     private var mixer: AVAudioMixerNode?
 
-    private var baseFrequency: Double = 200.0
-    private var beatFrequency: Double = 10.0
+    private var baseFrequency: Double = AppConstants.Audio.Frequency.defaultBase
+    private var beatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
 
-    private let sampleRate: Double = 44100.0
-    private let bufferSize: AVAudioFrameCount = 22050 // 0.5 seconds at 44.1kHz
-
-    private var timer: Timer?
-    private var startTime: Date?
-    private var pausedTime: TimeInterval = 0
-
-    init() {
-        setupAudioEngine()
+    override func updateVolume() {
+        leftPlayerNode?.volume = volume
+        rightPlayerNode?.volume = volume
     }
 
-    private func setupAudioEngine() {
-        audioEngine = AVAudioEngine()
+    override func setupAudioEngine() {
+        super.setupAudioEngine()
+
         leftPlayerNode = AVAudioPlayerNode()
         rightPlayerNode = AVAudioPlayerNode()
         mixer = audioEngine?.mainMixerNode
@@ -82,6 +72,10 @@ class BinauralBeatsGenerator: ObservableObject {
             // Schedule initial buffers
             scheduleBuffers()
 
+            // Set initial volume
+            leftPlayerNode?.volume = volume
+            rightPlayerNode?.volume = volume
+
             leftPlayerNode?.play()
             rightPlayerNode?.play()
 
@@ -92,6 +86,14 @@ class BinauralBeatsGenerator: ObservableObject {
         } catch {
             print("Failed to start audio engine: \(error.localizedDescription)")
         }
+    }
+
+    func start() {
+        start(
+            baseFrequency: baseFrequency,
+            beatFrequency: beatFrequency,
+            duration: duration
+        )
     }
 
     func pause() {
@@ -107,17 +109,10 @@ class BinauralBeatsGenerator: ObservableObject {
         stopTimer()
     }
 
-    func stop() {
+    override func stop() {
         leftPlayerNode?.stop()
         rightPlayerNode?.stop()
-        audioEngine?.stop()
-
-        isPlaying = false
-        currentTime = 0
-        pausedTime = 0
-        startTime = nil
-
-        stopTimer()
+        super.stop()
     }
 
     func resume() {
@@ -138,58 +133,5 @@ class BinauralBeatsGenerator: ObservableObject {
         // Schedule buffers with looping
         leftPlayer.scheduleBuffer(leftBuffer, at: nil, options: .loops)
         rightPlayer.scheduleBuffer(rightBuffer, at: nil, options: .loops)
-    }
-
-    private func generateSineWaveBuffer(frequency: Double) -> AVAudioPCMBuffer {
-        let format = AVAudioFormat(
-            commonFormat: .pcmFormatFloat32,
-            sampleRate: sampleRate,
-            channels: 1,
-            interleaved: false
-        )!
-
-        let buffer = AVAudioPCMBuffer(
-            pcmFormat: format,
-            frameCapacity: bufferSize
-        )!
-
-        buffer.frameLength = bufferSize
-
-        let channels = UnsafeBufferPointer(start: buffer.floatChannelData, count: 1)
-        let samples = UnsafeMutableBufferPointer<Float>(start: channels[0], count: Int(bufferSize))
-
-        let angularFrequency = 2.0 * Double.pi * frequency / sampleRate
-
-        for i in 0..<Int(bufferSize) {
-            let sample = sin(angularFrequency * Double(i))
-            samples[i] = Float(sample) * 0.3 // Reduce volume to 30% to prevent clipping
-        }
-
-        return buffer
-    }
-
-    private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            self?.updateTime()
-        }
-    }
-
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    private func updateTime() {
-        guard let startTime = startTime else { return }
-
-        currentTime = Date().timeIntervalSince(startTime)
-
-        if currentTime >= duration {
-            stop()
-        }
-    }
-
-    deinit {
-        stop()
     }
 }
