@@ -11,15 +11,19 @@ import Combine
 class BinauralBeatsViewModel: BaseGeneratorViewModel {
     @Published var baseFrequency: Double = AppConstants.Audio.Frequency.defaultBase
     @Published var beatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
-    @Published var volume: Float = AppConstants.Audio.defaultVolume
+    @Published var volume: Float
 
     private let generator = BinauralBeatsGenerator()
+    private let settingsManager = SettingsManager.shared
 
     // Frequency constraints
     let baseFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.baseMin...AppConstants.Audio.Frequency.baseMax
     let beatFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.beatMin...AppConstants.Audio.Frequency.beatMax
 
     override init() {
+        // Load saved volume
+        self.volume = settingsManager.volume
+
         super.init()
 
         // Subscribe to generator state
@@ -31,6 +35,9 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
 
         generator.$duration
             .assign(to: &$duration)
+
+        // Set initial volume on generator
+        generator.setVolume(volume)
     }
 
     func play() {
@@ -39,14 +46,17 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
             beatFrequency: beatFrequency,
             duration: duration
         )
+        HapticManager.shared.playStart()
     }
 
     func pause() {
         generator.pause()
+        HapticManager.shared.playButtonTap()
     }
 
     func stop() {
         generator.stop()
+        HapticManager.shared.playStop()
     }
 
     func resume() {
@@ -72,6 +82,7 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
         baseFrequency = preset.baseFrequency
         beatFrequency = preset.beatFrequency
         duration = preset.duration
+        HapticManager.shared.playPresetLoad()
     }
 
     func getBrainwaveType() -> String {
@@ -81,5 +92,7 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
     func setVolume(_ newVolume: Float) {
         volume = max(0.0, min(1.0, newVolume))
         generator.setVolume(volume)
+        // Save to settings manager
+        settingsManager.volume = volume
     }
 }

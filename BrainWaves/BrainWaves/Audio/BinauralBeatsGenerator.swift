@@ -72,15 +72,15 @@ class BinauralBeatsGenerator: BaseAudioGenerator, AudioGenerator {
             // Schedule initial buffers
             scheduleBuffers()
 
-            // Set initial volume
-            leftPlayerNode?.volume = volume
-            rightPlayerNode?.volume = volume
-
             leftPlayerNode?.play()
             rightPlayerNode?.play()
 
             isPlaying = true
             startTime = Date().addingTimeInterval(-pausedTime)
+
+            // Start with fade in effect
+            let savedVolume = volume
+            fadeIn(to: savedVolume)
 
             startTimer()
         } catch {

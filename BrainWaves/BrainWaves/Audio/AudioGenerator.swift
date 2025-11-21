@@ -37,6 +37,14 @@ class BaseAudioGenerator: ObservableObject {
     var startTime: Date?
     var pausedTime: TimeInterval = 0
 
+    // Fade effect properties
+    private var fadeTimer: Timer?
+    private var targetVolume: Float = 0
+    private var fadeStartVolume: Float = 0
+    private var fadeStartTime: Date?
+    private var fadeDuration: TimeInterval = 0
+    private var isFading = false
+
     init() {
         setupAudioEngine()
     }
@@ -47,12 +55,66 @@ class BaseAudioGenerator: ObservableObject {
 
     func setVolume(_ newVolume: Float) {
         volume = max(0.0, min(1.0, newVolume))
+        // Stop any active fade
+        stopFade()
         updateVolume()
     }
 
     // Override this in subclasses to update volume for active playback
     func updateVolume() {
         // Default implementation - subclasses can override
+    }
+
+    // MARK: - Fade Effects
+
+    func fadeIn(to targetVolume: Float, duration: TimeInterval = AppConstants.AudioEffects.fadeInDuration) {
+        self.targetVolume = targetVolume
+        self.fadeStartVolume = 0
+        self.fadeDuration = duration
+        self.volume = 0
+        updateVolume()
+        startFade()
+    }
+
+    func fadeOut(duration: TimeInterval = AppConstants.AudioEffects.fadeOutDuration, completion: (() -> Void)? = nil) {
+        self.targetVolume = 0
+        self.fadeStartVolume = volume
+        self.fadeDuration = duration
+        startFade {
+            completion?()
+        }
+    }
+
+    private func startFade(completion: (() -> Void)? = nil) {
+        isFading = true
+        fadeStartTime = Date()
+
+        fadeTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.AudioEffects.fadeSmoothness, repeats: true) { [weak self] _ in
+            self?.updateFade(completion: completion)
+        }
+    }
+
+    private func updateFade(completion: (() -> Void)? = nil) {
+        guard let fadeStartTime = fadeStartTime, isFading else { return }
+
+        let elapsed = Date().timeIntervalSince(fadeStartTime)
+        let progress = min(elapsed / fadeDuration, 1.0)
+
+        // Linear interpolation
+        volume = fadeStartVolume + Float(progress) * (targetVolume - fadeStartVolume)
+        updateVolume()
+
+        if progress >= 1.0 {
+            stopFade()
+            completion?()
+        }
+    }
+
+    private func stopFade() {
+        fadeTimer?.invalidate()
+        fadeTimer = nil
+        isFading = false
+        fadeStartTime = nil
     }
 
     func startTimer() {
@@ -75,6 +137,8 @@ class BaseAudioGenerator: ObservableObject {
         currentTime = Date().timeIntervalSince(startTime)
 
         if currentTime >= duration {
+            // Timer completed - trigger haptic feedback
+            HapticManager.shared.playTimerComplete()
             stop()
         }
     }

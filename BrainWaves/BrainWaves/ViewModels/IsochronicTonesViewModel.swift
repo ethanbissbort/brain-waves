@@ -11,15 +11,19 @@ import Combine
 class IsochronicTonesViewModel: BaseGeneratorViewModel {
     @Published var carrierFrequency: Double = AppConstants.Audio.Frequency.defaultCarrier
     @Published var pulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
-    @Published var volume: Float = AppConstants.Audio.defaultVolume
+    @Published var volume: Float
 
     private let generator = IsochronicTonesGenerator()
+    private let settingsManager = SettingsManager.shared
 
     // Frequency constraints
     let carrierFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.baseMin...AppConstants.Audio.Frequency.baseMax
     let pulseFrequencyRange: ClosedRange<Double> = AppConstants.Audio.Frequency.beatMin...AppConstants.Audio.Frequency.beatMax
 
     override init() {
+        // Load saved volume
+        self.volume = settingsManager.volume
+
         super.init()
 
         // Subscribe to generator state
@@ -31,6 +35,9 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
 
         generator.$duration
             .assign(to: &$duration)
+
+        // Set initial volume on generator
+        generator.setVolume(volume)
     }
 
     func play() {
@@ -39,14 +46,17 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
             pulseFrequency: pulseFrequency,
             duration: duration
         )
+        HapticManager.shared.playStart()
     }
 
     func pause() {
         generator.pause()
+        HapticManager.shared.playButtonTap()
     }
 
     func stop() {
         generator.stop()
+        HapticManager.shared.playStop()
     }
 
     func resume() {
@@ -72,6 +82,7 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
         carrierFrequency = preset.carrierFrequency
         pulseFrequency = preset.pulseFrequency
         duration = preset.duration
+        HapticManager.shared.playPresetLoad()
     }
 
     func getBrainwaveType() -> String {
@@ -96,5 +107,7 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
     func setVolume(_ newVolume: Float) {
         volume = max(0.0, min(1.0, newVolume))
         generator.setVolume(volume)
+        // Save to settings manager
+        settingsManager.volume = volume
     }
 }
