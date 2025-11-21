@@ -12,6 +12,8 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
     @Published var carrierFrequency: Double = AppConstants.Audio.Frequency.defaultCarrier
     @Published var pulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
     @Published var volume: Float
+    @Published var waveformType: AppConstants.WaveformType = .sine
+    @Published var rampConfig: FrequencyRampConfig = FrequencyRampConfig()
 
     private let generator = IsochronicTonesGenerator()
     private let settingsManager = SettingsManager.shared
@@ -38,6 +40,11 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
 
         // Set initial volume on generator
         generator.setVolume(volume)
+
+        // Subscribe waveformType to generator
+        $waveformType
+            .assign(to: \.waveformType, on: generator)
+            .store(in: &cancellables)
     }
 
     func play() {
@@ -70,7 +77,9 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
             name: presetName,
             carrierFrequency: carrierFrequency,
             pulseFrequency: pulseFrequency,
-            duration: duration
+            duration: duration,
+            waveformType: waveformType,
+            rampConfig: rampConfig.enabled ? rampConfig : nil
         )
 
         presetStore.addIsochronicPreset(preset)
@@ -82,6 +91,10 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
         carrierFrequency = preset.carrierFrequency
         pulseFrequency = preset.pulseFrequency
         duration = preset.duration
+        waveformType = preset.waveformType
+        if let rampConfig = preset.rampConfig {
+            self.rampConfig = rampConfig
+        }
         HapticManager.shared.playPresetLoad()
     }
 

@@ -12,6 +12,8 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
     @Published var baseFrequency: Double = AppConstants.Audio.Frequency.defaultBase
     @Published var beatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
     @Published var volume: Float
+    @Published var waveformType: AppConstants.WaveformType = .sine
+    @Published var rampConfig: FrequencyRampConfig = FrequencyRampConfig()
 
     private let generator = BinauralBeatsGenerator()
     private let settingsManager = SettingsManager.shared
@@ -38,6 +40,11 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
 
         // Set initial volume on generator
         generator.setVolume(volume)
+
+        // Subscribe waveformType to generator
+        $waveformType
+            .assign(to: \.waveformType, on: generator)
+            .store(in: &cancellables)
     }
 
     func play() {
@@ -70,7 +77,9 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
             name: presetName,
             baseFrequency: baseFrequency,
             beatFrequency: beatFrequency,
-            duration: duration
+            duration: duration,
+            waveformType: waveformType,
+            rampConfig: rampConfig.enabled ? rampConfig : nil
         )
 
         presetStore.addBinauralPreset(preset)
@@ -82,6 +91,10 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
         baseFrequency = preset.baseFrequency
         beatFrequency = preset.beatFrequency
         duration = preset.duration
+        waveformType = preset.waveformType
+        if let rampConfig = preset.rampConfig {
+            self.rampConfig = rampConfig
+        }
         HapticManager.shared.playPresetLoad()
     }
 

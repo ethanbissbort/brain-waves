@@ -13,17 +13,23 @@ struct BinauralBeatPreset: Codable, Identifiable, Equatable {
     var baseFrequency: Double // Carrier frequency (100-500 Hz)
     var beatFrequency: Double // Difference frequency (0.5-100 Hz)
     var duration: TimeInterval // Duration in seconds
+    var waveformType: AppConstants.WaveformType // Waveform type
+    var rampConfig: FrequencyRampConfig? // Optional frequency ramping
 
     init(id: UUID = UUID(),
          name: String,
          baseFrequency: Double,
          beatFrequency: Double,
-         duration: TimeInterval) {
+         duration: TimeInterval,
+         waveformType: AppConstants.WaveformType = .sine,
+         rampConfig: FrequencyRampConfig? = nil) {
         self.id = id
         self.name = name
         self.baseFrequency = baseFrequency
         self.beatFrequency = beatFrequency
         self.duration = duration
+        self.waveformType = waveformType
+        self.rampConfig = rampConfig
     }
 
     // Predefined therapeutic presets
