@@ -229,8 +229,8 @@ struct MultiLayerView: View {
     private func saveConfiguration() {
         // This would save the current layer configuration
         // In a real implementation, this would persist to UserDefaults or a database
-        print("Saving multi-layer configuration: \(presetName)")
-        print("Layers: \(layerManager.layers.count)")
+        Logger.shared.info("Saving multi-layer configuration: \(presetName)")
+        Logger.shared.info("Layers: \(layerManager.layers.count)")
 
         // Clear the preset name
         presetName = ""

@@ -71,7 +71,7 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
 
             startTimer()
         } catch {
-            print("Failed to start audio engine: \(error.localizedDescription)")
+            Logger.shared.audioError(error)
         }
     }
 
@@ -131,12 +131,15 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
         let leftSamples = UnsafeMutableBufferPointer<Float>(start: channels[0], count: Int(bufferSize))
         let rightSamples = UnsafeMutableBufferPointer<Float>(start: channels[1], count: Int(bufferSize))
 
-        let carrierAngularFreq = 2.0 * Double.pi * carrierFrequency / sampleRate
+        // Generate carrier wave using the selected waveform type
+        let carrierBuffer = generateWaveBuffer(frequency: carrierFrequency, volume: 1.0, waveformType: waveformType)
+        let carrierSamples = UnsafeBufferPointer<Float>(start: carrierBuffer.floatChannelData?[0], count: Int(bufferSize))
+
         let pulseAngularFreq = 2.0 * Double.pi * pulseFrequency / sampleRate
 
         for i in 0..<Int(bufferSize) {
-            // Generate carrier wave
-            let carrierWave = sin(carrierAngularFreq * Double(i))
+            // Get carrier wave sample from generated buffer
+            let carrierWave = carrierSamples[i]
 
             // Generate pulse envelope (0 to 1)
             // Using a smoothed pulse for better sound quality
@@ -146,8 +149,8 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
             let threshold = 0.5
             let pulse = pulseEnvelope > threshold ? 1.0 : 0.0
 
-            // Combine carrier and pulse
-            let sample = Float(carrierWave * pulse * Double(AppConstants.Audio.defaultVolume))
+            // Combine carrier and pulse with current volume setting
+            let sample = carrierWave * Float(pulse) * volume
 
             // Same signal on both channels (mono)
             leftSamples[i] = sample

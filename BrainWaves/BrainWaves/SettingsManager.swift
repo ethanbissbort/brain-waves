@@ -21,11 +21,11 @@ class SettingsManager: ObservableObject, SettingsManagerProtocol {
 
     private init() {
         // Load saved volume or use default
-        self.volume = userDefaults.float(forKey: AppConstants.Storage.volumePreferenceKey)
-
-        // If no saved volume (returns 0), use default
-        if volume == 0 {
-            volume = AppConstants.Audio.defaultVolume
+        // Use object(forKey:) to properly distinguish between "not set" and "set to 0"
+        if let savedVolume = userDefaults.object(forKey: AppConstants.Storage.volumePreferenceKey) as? Float {
+            self.volume = savedVolume
+        } else {
+            self.volume = AppConstants.Audio.defaultVolume
         }
     }
 
