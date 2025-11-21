@@ -186,10 +186,15 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - [x] Deep linking support for quick session start
   - [x] View modifier for handling quick actions
 
-- [ ] **Gesture Controls**
-  - Swipe to change frequencies
-  - Pinch to adjust volume
-  - Double-tap to favorite
+- [x] **Gesture Controls** ✅
+  - [x] Swipe to change frequencies (up/down gestures)
+  - [x] Pinch to adjust volume (pinch in/out)
+  - [x] Double-tap to favorite (quick save to presets)
+  - [x] GestureControlManager with persistent settings
+  - [x] Configurable sensitivity and step sizes
+  - [x] Visual feedback overlay with auto-dismiss
+  - [x] Integrated into all generator views
+  - [x] GestureSettingsView for customization
 
 ### 2.3 Preset & Playlist Improvements
 
@@ -217,11 +222,17 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - [ ] QR code sharing (pending)
 
 #### Advanced Playlist Features
-- [ ] **Playlist Enhancements**
-  - Shuffle mode
-  - Repeat modes (repeat one, repeat all)
-  - Crossfade between presets
-  - Playlist templates
+- [x] **Playlist Enhancements** ✅
+  - [x] Shuffle mode (randomized playback order)
+  - [x] Repeat modes (repeat one, repeat all, off)
+  - [x] Crossfade between presets (0-10 second configurable)
+  - [x] Playlist templates (4 professionally designed)
+  - [x] RepeatMode enum with proper cycling
+  - [x] PlaylistControlsView UI component
+  - [x] PlaylistTemplateSelector for quick creation
+  - [x] Playback helper methods (getNextItem, getPreviousItem)
+  - [x] Real-time playlist updates via bindings
+  - [x] Visual playback order descriptions
 
 - [ ] **Smart Playlists**
   - Auto-generate based on mood/time of day
