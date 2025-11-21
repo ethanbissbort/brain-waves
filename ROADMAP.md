@@ -175,16 +175,22 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - Tap preset in Presets view to automatically load in generator view
   - Seamless navigation between tabs when loading presets
 
-- [ ] **Preset Categories**
-  - Organize presets by purpose (sleep, focus, meditation)
-  - Add custom tags
-  - Smart preset recommendations
+- [x] **Preset Categories** ✅
+  - [x] Organize presets by purpose (sleep, focus, meditation, relaxation, creativity, energy, study, custom)
+  - [x] Add custom tags (flexible tag system with add/remove functionality)
+  - [x] Category-based organization with color coding and icons
+  - [x] Smart tag management with FlowLayout UI
+  - [x] CategorySelector component with collapsible interface
+  - [ ] Smart preset recommendations (pending)
 
-- [ ] **Preset Import/Export**
-  - Export presets as JSON
-  - Share presets via AirDrop/messaging
-  - Import community presets
-  - QR code sharing
+- [x] **Preset Import/Export** ✅
+  - [x] Export presets as JSON (single or multiple presets)
+  - [x] Share presets via AirDrop/messaging (integrated share sheet)
+  - [x] Import community presets (from JSON or files)
+  - [x] File import with clipboard paste support
+  - [x] Human-readable text export format
+  - [x] PresetExporter utility with comprehensive import/export methods
+  - [ ] QR code sharing (pending)
 
 #### Advanced Playlist Features
 - [ ] **Playlist Enhancements**
