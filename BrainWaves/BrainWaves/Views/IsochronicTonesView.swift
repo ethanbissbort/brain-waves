@@ -44,6 +44,13 @@ struct IsochronicTonesView: View {
                     WaveformSelector(selectedWaveform: $viewModel.waveformType)
                         .disabled(viewModel.isPlaying)
 
+                    // Waveform Visualization
+                    WaveformVisualizer(
+                        frequency: viewModel.pulseFrequency,
+                        isPlaying: viewModel.isPlaying,
+                        waveformType: viewModel.waveformType
+                    )
+
                     // Volume Control
                     VolumeControl(
                         volume: $viewModel.volume,
