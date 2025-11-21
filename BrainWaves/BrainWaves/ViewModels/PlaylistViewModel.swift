@@ -27,6 +27,14 @@ class PlaylistViewModel: ObservableObject {
         showingCreatePlaylist = false
     }
 
+    func createPlaylist(from template: Playlist) {
+        presetStore.addPlaylist(template)
+    }
+
+    func updatePlaylist(_ playlist: Playlist) {
+        presetStore.updatePlaylist(playlist)
+    }
+
     func addItemToPlaylist(playlist: Playlist, presetId: UUID, type: PresetType) {
         var updatedPlaylist = playlist
         updatedPlaylist.addItem(presetId: presetId, type: type)

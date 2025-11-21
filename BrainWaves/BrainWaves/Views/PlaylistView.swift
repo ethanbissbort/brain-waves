@@ -11,6 +11,7 @@ struct PlaylistView: View {
     @ObservedObject var presetStore = PresetStore.shared
     @StateObject private var viewModel = PlaylistViewModel()
     @State private var selectedPlaylist: Playlist?
+    @State private var showingTemplates = false
 
     var body: some View {
         NavigationView {
@@ -37,6 +38,13 @@ struct PlaylistView: View {
             }
             .navigationTitle("Playlists")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        showingTemplates = true
+                    }) {
+                        Label("Templates", systemImage: "square.stack.fill")
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         viewModel.showingCreatePlaylist = true
@@ -47,6 +55,11 @@ struct PlaylistView: View {
             }
             .sheet(isPresented: $viewModel.showingCreatePlaylist) {
                 CreatePlaylistSheet(viewModel: viewModel)
+            }
+            .sheet(isPresented: $showingTemplates) {
+                PlaylistTemplateSelector(isPresented: $showingTemplates) { template in
+                    viewModel.createPlaylist(from: template)
+                }
             }
         }
     }
@@ -96,9 +109,30 @@ struct PlaylistDetailView: View {
     @ObservedObject var presetStore = PresetStore.shared
     @State private var editMode = EditMode.inactive
     @State private var showingAddPreset = false
+    @State private var localPlaylist: Playlist
+
+    init(playlist: Playlist, viewModel: PlaylistViewModel) {
+        self.playlist = playlist
+        self.viewModel = viewModel
+        _localPlaylist = State(initialValue: playlist)
+    }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
+            // Playlist Controls
+            ScrollView {
+                VStack(spacing: 12) {
+                    PlaylistControlsView(playlist: $localPlaylist)
+                        .onChange(of: localPlaylist) { updatedPlaylist in
+                            viewModel.updatePlaylist(updatedPlaylist)
+                        }
+                }
+                .padding()
+            }
+            .frame(maxHeight: 300)
+
+            Divider()
+
             List {
                 ForEach(playlist.items) { item in
                     PlaylistItemRow(item: item, presetStore: presetStore)
