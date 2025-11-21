@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class PresetStore: ObservableObject {
+class PresetStore: ObservableObject, PresetStoreProtocol {
     static let shared = PresetStore()
 
     @Published var binauralPresets: [BinauralBeatPreset] = []
@@ -20,6 +20,9 @@ class PresetStore: ObservableObject {
     private let playlistsKey = "playlists"
 
     private init() {
+        // Perform any necessary migrations first
+        MigrationManager.shared.performMigrations()
+
         loadAll()
         // If no presets exist, add default ones
         if binauralPresets.isEmpty {
@@ -35,14 +38,28 @@ class PresetStore: ObservableObject {
     // MARK: - Binaural Beat Presets
 
     func addBinauralPreset(_ preset: BinauralBeatPreset) {
-        binauralPresets.append(preset)
-        saveBinauralPresets()
+        do {
+            try preset.validate()
+            binauralPresets.append(preset)
+            saveBinauralPresets()
+            Logger.shared.persistenceInfo("Added binaural preset: \(preset.name)")
+        } catch {
+            Logger.shared.persistenceError(error)
+            ErrorHandler.shared.handle(error, title: "Invalid Preset")
+        }
     }
 
     func updateBinauralPreset(_ preset: BinauralBeatPreset) {
-        if let index = binauralPresets.firstIndex(where: { $0.id == preset.id }) {
-            binauralPresets[index] = preset
-            saveBinauralPresets()
+        do {
+            try preset.validate()
+            if let index = binauralPresets.firstIndex(where: { $0.id == preset.id }) {
+                binauralPresets[index] = preset
+                saveBinauralPresets()
+                Logger.shared.persistenceInfo("Updated binaural preset: \(preset.name)")
+            }
+        } catch {
+            Logger.shared.persistenceError(error)
+            ErrorHandler.shared.handle(error, title: "Invalid Preset")
         }
     }
 
@@ -67,14 +84,28 @@ class PresetStore: ObservableObject {
     // MARK: - Isochronic Tone Presets
 
     func addIsochronicPreset(_ preset: IsochronicTonePreset) {
-        isochronicPresets.append(preset)
-        saveIsochronicPresets()
+        do {
+            try preset.validate()
+            isochronicPresets.append(preset)
+            saveIsochronicPresets()
+            Logger.shared.persistenceInfo("Added isochronic preset: \(preset.name)")
+        } catch {
+            Logger.shared.persistenceError(error)
+            ErrorHandler.shared.handle(error, title: "Invalid Preset")
+        }
     }
 
     func updateIsochronicPreset(_ preset: IsochronicTonePreset) {
-        if let index = isochronicPresets.firstIndex(where: { $0.id == preset.id }) {
-            isochronicPresets[index] = preset
-            saveIsochronicPresets()
+        do {
+            try preset.validate()
+            if let index = isochronicPresets.firstIndex(where: { $0.id == preset.id }) {
+                isochronicPresets[index] = preset
+                saveIsochronicPresets()
+                Logger.shared.persistenceInfo("Updated isochronic preset: \(preset.name)")
+            }
+        } catch {
+            Logger.shared.persistenceError(error)
+            ErrorHandler.shared.handle(error, title: "Invalid Preset")
         }
     }
 
@@ -99,14 +130,28 @@ class PresetStore: ObservableObject {
     // MARK: - Playlists
 
     func addPlaylist(_ playlist: Playlist) {
-        playlists.append(playlist)
-        savePlaylists()
+        do {
+            try playlist.validate()
+            playlists.append(playlist)
+            savePlaylists()
+            Logger.shared.persistenceInfo("Added playlist: \(playlist.name)")
+        } catch {
+            Logger.shared.persistenceError(error)
+            ErrorHandler.shared.handle(error, title: "Invalid Playlist")
+        }
     }
 
     func updatePlaylist(_ playlist: Playlist) {
-        if let index = playlists.firstIndex(where: { $0.id == playlist.id }) {
-            playlists[index] = playlist
-            savePlaylists()
+        do {
+            try playlist.validate()
+            if let index = playlists.firstIndex(where: { $0.id == playlist.id }) {
+                playlists[index] = playlist
+                savePlaylists()
+                Logger.shared.persistenceInfo("Updated playlist: \(playlist.name)")
+            }
+        } catch {
+            Logger.shared.persistenceError(error)
+            ErrorHandler.shared.handle(error, title: "Invalid Playlist")
         }
     }
 

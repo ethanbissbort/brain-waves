@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class PresetCoordinator: ObservableObject {
+class PresetCoordinator: ObservableObject, PresetCoordinatorProtocol {
     static let shared = PresetCoordinator()
 
     @Published var selectedBinauralPreset: BinauralBeatPreset?
