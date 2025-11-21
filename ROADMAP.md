@@ -104,12 +104,15 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - [x] Fade-in/fade-out effects implemented
 
 #### Advanced Audio Features
-- [ ] **Waveform Selection**
-  - Add sine wave (current default)
-  - Add square wave
-  - Add triangle wave
-  - Add sawtooth wave
-  - Add white/pink/brown noise options
+- [x] **Waveform Selection** ✅
+  - [x] Add sine wave (current default)
+  - [x] Add square wave
+  - [x] Add triangle wave
+  - [x] Add sawtooth wave
+  - [x] Add white/pink/brown noise options
+  - [x] Created WaveformSelector UI component with collapsible grid
+  - [x] Integrated into both Binaural Beats and Isochronic Tones views
+  - [x] Waveform type persists with presets
 
 - [ ] **Multi-Layer Audio**
   - Support multiple simultaneous tones
@@ -117,11 +120,15 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - Mix isochronic tones with ambient music
   - Create complex therapeutic sound scapes
 
-- [ ] **Frequency Ramping**
-  - Gradually change frequency over time
-  - Create frequency sweep presets
-  - Implement guided meditation programs
-  - Add ascending/descending ramps
+- [x] **Frequency Ramping** ✅
+  - [x] Gradually change frequency over time
+  - [x] Create frequency sweep presets
+  - [x] Implement guided meditation programs
+  - [x] Add ascending/descending ramps
+  - [x] Added ascending-descending and descending-ascending patterns
+  - [x] Implemented linear, exponential, and logarithmic curves
+  - [x] Created FrequencyRampingControl UI with visual preview
+  - [x] Ramping configuration persists with presets
 
 - [ ] **Audio Effects**
   - Add reverb effect
