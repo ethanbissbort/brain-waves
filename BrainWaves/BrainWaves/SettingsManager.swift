@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class SettingsManager: ObservableObject {
+class SettingsManager: ObservableObject, SettingsManagerProtocol {
     static let shared = SettingsManager()
 
     @Published var volume: Float {

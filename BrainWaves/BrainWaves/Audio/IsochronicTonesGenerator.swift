@@ -8,7 +8,7 @@
 import AVFoundation
 import Combine
 
-class IsochronicTonesGenerator: BaseAudioGenerator, AudioGenerator {
+class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProtocol {
     private var playerNode: AVAudioPlayerNode?
     private var mixer: AVAudioMixerNode?
 

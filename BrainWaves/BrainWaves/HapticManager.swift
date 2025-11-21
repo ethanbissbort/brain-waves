@@ -7,48 +7,81 @@
 
 import UIKit
 
-class HapticManager {
+class HapticManager: HapticManagerProtocol {
     static let shared = HapticManager()
 
     private init() {}
 
-    func playSelection() {
+    // MARK: - HapticManagerProtocol
+
+    func lightImpact() {
+        playImpact(style: .light)
+    }
+
+    func mediumImpact() {
+        playImpact(style: .medium)
+    }
+
+    func heavyImpact() {
+        playImpact(style: .heavy)
+    }
+
+    func selectionChanged() {
+        playSelection()
+    }
+
+    func success() {
+        playNotification(type: .success)
+    }
+
+    func warning() {
+        playNotification(type: .warning)
+    }
+
+    func error() {
+        playNotification(type: .error)
+    }
+
+    // MARK: - Private Helpers
+
+    private func playSelection() {
         let generator = UISelectionFeedbackGenerator()
         generator.selectionChanged()
     }
 
-    func playImpact(style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
+    private func playImpact(style: UIImpactFeedbackGenerator.FeedbackStyle) {
         let generator = UIImpactFeedbackGenerator(style: style)
         generator.impactOccurred()
     }
 
-    func playNotification(type: UINotificationFeedbackGenerator.FeedbackType) {
+    private func playNotification(type: UINotificationFeedbackGenerator.FeedbackType) {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(type)
     }
 
-    // Specific use cases
+    // MARK: - Legacy Methods (for backward compatibility)
+
     func playButtonTap() {
-        playImpact(style: .light)
+        lightImpact()
     }
 
     func playStart() {
-        playNotification(type: .success)
+        success()
     }
 
     func playStop() {
-        playImpact(style: .medium)
+        mediumImpact()
     }
 
     func playTimerComplete() {
-        playNotification(type: .success)
+        success()
         // Add a second impact for emphasis
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            self.playImpact(style: .heavy)
+            self.heavyImpact()
         }
     }
 
     func playPresetLoad() {
-        playSelection()
+        selectionChanged()
     }
 }

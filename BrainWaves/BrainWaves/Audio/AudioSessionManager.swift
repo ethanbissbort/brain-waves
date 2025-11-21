@@ -8,42 +8,58 @@
 import AVFoundation
 import Combine
 
-class AudioSessionManager: ObservableObject {
+class AudioSessionManager: ObservableObject, AudioSessionManagerProtocol {
     static let shared = AudioSessionManager()
 
     @Published var isInterrupted = false
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        setupAudioSession()
-        setupNotifications()
-    }
-
-    private func setupAudioSession() {
         do {
-            let audioSession = AVAudioSession.sharedInstance()
-
-            // Configure for playback with mixing
-            try audioSession.setCategory(
-                .playback,
-                mode: .default,
-                options: [.mixWithOthers]
-            )
-
-            // Activate the session
-            try audioSession.setActive(true)
-
-            print("Audio session configured successfully")
+            try configureAudioSession()
         } catch {
             print("Failed to configure audio session: \(error.localizedDescription)")
         }
+        setupNotifications()
     }
+
+    // MARK: - AudioSessionManagerProtocol
+
+    func configureAudioSession() throws {
+        let audioSession = AVAudioSession.sharedInstance()
+
+        // Configure for playback with mixing
+        try audioSession.setCategory(
+            .playback,
+            mode: .default,
+            options: [.mixWithOthers]
+        )
+
+        // Activate the session
+        try audioSession.setActive(true)
+
+        print("Audio session configured successfully")
+    }
+
+    func handleInterruption(type: InterruptionType) {
+        switch type {
+        case .began:
+            isInterrupted = true
+            print("Audio interruption began")
+        case .ended:
+            isInterrupted = false
+            print("Audio interruption ended")
+            reactivateSession()
+        }
+    }
+
+    // MARK: - Private Helpers
 
     private func setupNotifications() {
         // Handle audio interruptions (phone calls, alarms, etc.)
         NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification)
             .sink { [weak self] notification in
-                self?.handleInterruption(notification)
+                self?.handleInterruptionNotification(notification)
             }
             .store(in: &cancellables)
 
@@ -55,7 +71,7 @@ class AudioSessionManager: ObservableObject {
             .store(in: &cancellables)
     }
 
-    private func handleInterruption(_ notification: Notification) {
+    private func handleInterruptionNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
               let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
@@ -64,21 +80,16 @@ class AudioSessionManager: ObservableObject {
 
         switch type {
         case .began:
-            // Interruption began - audio playback is suspended
-            isInterrupted = true
-            print("Audio interruption began")
+            handleInterruption(type: .began)
 
         case .ended:
-            // Interruption ended - audio playback can resume
-            isInterrupted = false
-
             if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
                 let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
                 if options.contains(.shouldResume) {
-                    // Resume playback if appropriate
-                    print("Audio interruption ended - should resume")
-                    reactivateSession()
+                    handleInterruption(type: .ended)
                 }
+            } else {
+                handleInterruption(type: .ended)
             }
 
         @unknown default:

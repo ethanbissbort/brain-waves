@@ -8,7 +8,7 @@
 import AVFoundation
 import Combine
 
-class BinauralBeatsGenerator: BaseAudioGenerator, AudioGenerator {
+class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol {
     private var leftPlayerNode: AVAudioPlayerNode?
     private var rightPlayerNode: AVAudioPlayerNode?
     private var mixer: AVAudioMixerNode?
