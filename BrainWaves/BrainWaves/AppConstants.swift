@@ -178,6 +178,82 @@ enum AppConstants {
         }
     }
 
+    // MARK: - Preset Categories
+
+    enum PresetCategory: String, CaseIterable, Codable {
+        case sleep = "Sleep"
+        case meditation = "Meditation"
+        case focus = "Focus"
+        case relaxation = "Relaxation"
+        case creativity = "Creativity"
+        case energy = "Energy"
+        case study = "Study"
+        case custom = "Custom"
+
+        var description: String {
+            switch self {
+            case .sleep:
+                return "Deep sleep and rest"
+            case .meditation:
+                return "Mindfulness and meditation"
+            case .focus:
+                return "Concentration and productivity"
+            case .relaxation:
+                return "Stress relief and calm"
+            case .creativity:
+                return "Creative flow and inspiration"
+            case .energy:
+                return "Alertness and vitality"
+            case .study:
+                return "Learning and retention"
+            case .custom:
+                return "Custom settings"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .sleep:
+                return "moon.stars.fill"
+            case .meditation:
+                return "figure.mind.and.body"
+            case .focus:
+                return "target"
+            case .relaxation:
+                return "leaf.fill"
+            case .creativity:
+                return "paintbrush.fill"
+            case .energy:
+                return "bolt.fill"
+            case .study:
+                return "book.fill"
+            case .custom:
+                return "star.fill"
+            }
+        }
+
+        var color: String {
+            switch self {
+            case .sleep:
+                return "indigo"
+            case .meditation:
+                return "purple"
+            case .focus:
+                return "blue"
+            case .relaxation:
+                return "green"
+            case .creativity:
+                return "orange"
+            case .energy:
+                return "yellow"
+            case .study:
+                return "cyan"
+            case .custom:
+                return "gray"
+            }
+        }
+    }
+
     // MARK: - Brainwave Types
 
     enum BrainwaveType: String {

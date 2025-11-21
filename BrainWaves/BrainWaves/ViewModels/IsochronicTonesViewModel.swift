@@ -14,6 +14,8 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
     @Published var volume: Float
     @Published var waveformType: AppConstants.WaveformType = .sine
     @Published var rampConfig: FrequencyRampConfig = FrequencyRampConfig()
+    @Published var category: AppConstants.PresetCategory = .custom
+    @Published var tags: [String] = []
 
     private let generator = IsochronicTonesGenerator()
     private let settingsManager = SettingsManager.shared
@@ -79,7 +81,9 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
             pulseFrequency: pulseFrequency,
             duration: duration,
             waveformType: waveformType,
-            rampConfig: rampConfig.enabled ? rampConfig : nil
+            rampConfig: rampConfig.enabled ? rampConfig : nil,
+            category: category,
+            tags: tags
         )
 
         presetStore.addIsochronicPreset(preset)
@@ -92,6 +96,8 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
         pulseFrequency = preset.pulseFrequency
         duration = preset.duration
         waveformType = preset.waveformType
+        category = preset.category
+        tags = preset.tags
         if let rampConfig = preset.rampConfig {
             self.rampConfig = rampConfig
         }

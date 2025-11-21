@@ -14,6 +14,8 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
     @Published var volume: Float
     @Published var waveformType: AppConstants.WaveformType = .sine
     @Published var rampConfig: FrequencyRampConfig = FrequencyRampConfig()
+    @Published var category: AppConstants.PresetCategory = .custom
+    @Published var tags: [String] = []
 
     private let generator = BinauralBeatsGenerator()
     private let settingsManager = SettingsManager.shared
@@ -79,7 +81,9 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
             beatFrequency: beatFrequency,
             duration: duration,
             waveformType: waveformType,
-            rampConfig: rampConfig.enabled ? rampConfig : nil
+            rampConfig: rampConfig.enabled ? rampConfig : nil,
+            category: category,
+            tags: tags
         )
 
         presetStore.addBinauralPreset(preset)
@@ -92,6 +96,8 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
         beatFrequency = preset.beatFrequency
         duration = preset.duration
         waveformType = preset.waveformType
+        category = preset.category
+        tags = preset.tags
         if let rampConfig = preset.rampConfig {
             self.rampConfig = rampConfig
         }
