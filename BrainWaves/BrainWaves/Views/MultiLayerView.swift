@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MultiLayerView: View {
     @StateObject private var layerManager = MultiLayerAudioManager()
+    @StateObject private var effectsManager = AudioEffectsManager()
     @State private var currentTime: TimeInterval = 0
     @State private var duration: TimeInterval = 600 // 10 minutes default
     @State private var timer: Timer?
@@ -50,6 +51,9 @@ struct MultiLayerView: View {
 
                     // Audio Layers Control
                     AudioLayerControl(layerManager: layerManager)
+
+                    // Audio Effects Control
+                    AudioEffectsControl(effectsManager: effectsManager)
 
                     // Timer Display
                     if layerManager.isPlaying {
