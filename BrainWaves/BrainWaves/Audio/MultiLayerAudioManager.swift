@@ -219,7 +219,7 @@ class MultiLayerAudioManager: ObservableObject {
 
             isPlaying = true
         } catch {
-            print("Error starting multi-layer audio: \(error)")
+            Logger.shared.audioError(error)
         }
     }
 

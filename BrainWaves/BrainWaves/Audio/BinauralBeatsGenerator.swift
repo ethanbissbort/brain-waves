@@ -84,7 +84,7 @@ class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol
 
             startTimer()
         } catch {
-            print("Failed to start audio engine: \(error.localizedDescription)")
+            Logger.shared.audioError(error)
         }
     }
 

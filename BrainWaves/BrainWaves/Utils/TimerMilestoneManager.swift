@@ -28,9 +28,9 @@ class TimerMilestoneManager: ObservableObject {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
             DispatchQueue.main.async {
                 if granted {
-                    print("Notification permission granted")
+                    Logger.shared.info("Notification permission granted")
                 } else {
-                    print("Notification permission denied")
+                    Logger.shared.info("Notification permission denied")
                 }
             }
         }
@@ -123,7 +123,7 @@ class TimerMilestoneManager: ObservableObject {
 
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Error scheduling notification: \(error)")
+                Logger.shared.error(error)
             } else {
                 self.notificationScheduled = true
             }

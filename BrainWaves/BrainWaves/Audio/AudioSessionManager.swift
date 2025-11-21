@@ -18,7 +18,7 @@ class AudioSessionManager: ObservableObject, AudioSessionManagerProtocol {
         do {
             try configureAudioSession()
         } catch {
-            print("Failed to configure audio session: \(error.localizedDescription)")
+            Logger.shared.audioError(error)
         }
         setupNotifications()
     }
@@ -38,17 +38,17 @@ class AudioSessionManager: ObservableObject, AudioSessionManagerProtocol {
         // Activate the session
         try audioSession.setActive(true)
 
-        print("Audio session configured successfully")
+        Logger.shared.audioInfo("Audio session configured successfully")
     }
 
     func handleInterruption(type: InterruptionType) {
         switch type {
         case .began:
             isInterrupted = true
-            print("Audio interruption began")
+            Logger.shared.audioInfo("Audio interruption began")
         case .ended:
             isInterrupted = false
-            print("Audio interruption ended")
+            Logger.shared.audioInfo("Audio interruption ended")
             reactivateSession()
         }
     }
@@ -106,10 +106,10 @@ class AudioSessionManager: ObservableObject, AudioSessionManagerProtocol {
 
         switch reason {
         case .newDeviceAvailable:
-            print("New audio device available")
+            Logger.shared.audioInfo("New audio device available")
 
         case .oldDeviceUnavailable:
-            print("Audio device removed")
+            Logger.shared.audioInfo("Audio device removed")
             // Could pause playback here if headphones were removed
 
         default:
@@ -120,18 +120,18 @@ class AudioSessionManager: ObservableObject, AudioSessionManagerProtocol {
     func reactivateSession() {
         do {
             try AVAudioSession.sharedInstance().setActive(true)
-            print("Audio session reactivated")
+            Logger.shared.audioInfo("Audio session reactivated")
         } catch {
-            print("Failed to reactivate audio session: \(error.localizedDescription)")
+            Logger.shared.audioError(error)
         }
     }
 
     func deactivateSession() {
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-            print("Audio session deactivated")
+            Logger.shared.audioInfo("Audio session deactivated")
         } catch {
-            print("Failed to deactivate audio session: \(error.localizedDescription)")
+            Logger.shared.audioError(error)
         }
     }
 }

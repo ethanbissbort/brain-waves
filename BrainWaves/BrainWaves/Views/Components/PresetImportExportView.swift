@@ -151,11 +151,11 @@ struct PresetImportSheet: View {
                         importText = content
                         HapticManager.shared.playSelection()
                     } catch {
-                        print("Error reading file: \(error)")
+                        Logger.shared.error(error)
                     }
                 }
             case .failure(let error):
-                print("File import error: \(error)")
+                Logger.shared.error(error)
             }
         }
     }
