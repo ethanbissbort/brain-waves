@@ -26,17 +26,23 @@ struct ContentView: View {
                 }
                 .tag(1)
 
+            MultiLayerView()
+                .tabItem {
+                    Label("Multi-Layer", systemImage: "square.stack.3d.up.fill")
+                }
+                .tag(2)
+
             PresetsView(selectedTab: $selectedTab)
                 .tabItem {
                     Label("Presets", systemImage: "bookmark.fill")
                 }
-                .tag(2)
+                .tag(3)
 
             PlaylistView()
                 .tabItem {
                     Label("Playlists", systemImage: "list.bullet")
                 }
-                .tag(3)
+                .tag(4)
         }
         .accentColor(.blue)
         .environmentObject(presetCoordinator)

@@ -94,6 +94,7 @@ class BaseAudioGenerator: ObservableObject {
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
     @Published var volume: Float = AppConstants.Audio.defaultVolume
+    @Published var waveformType: AppConstants.WaveformType = .sine
 
     var audioEngine: AVAudioEngine?
     let sampleRate: Double = AppConstants.Audio.sampleRate
@@ -110,6 +111,9 @@ class BaseAudioGenerator: ObservableObject {
     private var fadeStartTime: Date?
     private var fadeDuration: TimeInterval = 0
     private var isFading = false
+
+    // Noise generation state
+    private var brownNoiseState: Float = 0
 
     init() {
         setupAudioEngine()
@@ -265,6 +269,17 @@ class BaseAudioGenerator: ObservableObject {
     /// - Sample rate: Defined by ``AppConstants/Audio/sampleRate`` (44.1 kHz)
     /// - Format: 32-bit float PCM, mono, non-interleaved
     func generateSineWaveBuffer(frequency: Double, volume: Float = AppConstants.Audio.defaultVolume) -> AVAudioPCMBuffer {
+        return generateWaveBuffer(frequency: frequency, volume: volume, waveformType: waveformType)
+    }
+
+    /// Generates an audio buffer with the specified waveform type
+    ///
+    /// - Parameters:
+    ///   - frequency: The frequency of the wave in Hz
+    ///   - volume: The amplitude of the wave (0.0 to 1.0)
+    ///   - waveformType: The type of waveform to generate
+    /// - Returns: An `AVAudioPCMBuffer` containing the generated waveform
+    func generateWaveBuffer(frequency: Double, volume: Float, waveformType: AppConstants.WaveformType) -> AVAudioPCMBuffer {
         let format = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: sampleRate,
@@ -282,14 +297,96 @@ class BaseAudioGenerator: ObservableObject {
         let channels = UnsafeBufferPointer(start: buffer.floatChannelData, count: 1)
         let samples = UnsafeMutableBufferPointer<Float>(start: channels[0], count: Int(bufferSize))
 
-        let angularFrequency = 2.0 * Double.pi * frequency / sampleRate
-
-        for i in 0..<Int(bufferSize) {
-            let sample = sin(angularFrequency * Double(i))
-            samples[i] = Float(sample) * volume
+        switch waveformType {
+        case .sine:
+            generateSineWave(samples: samples, frequency: frequency, volume: volume)
+        case .square:
+            generateSquareWave(samples: samples, frequency: frequency, volume: volume)
+        case .triangle:
+            generateTriangleWave(samples: samples, frequency: frequency, volume: volume)
+        case .sawtooth:
+            generateSawtoothWave(samples: samples, frequency: frequency, volume: volume)
+        case .whiteNoise:
+            generateWhiteNoise(samples: samples, volume: volume)
+        case .pinkNoise:
+            generatePinkNoise(samples: samples, volume: volume)
+        case .brownNoise:
+            generateBrownNoise(samples: samples, volume: volume)
         }
 
         return buffer
+    }
+
+    // MARK: - Waveform Generation Methods
+
+    private func generateSineWave(samples: UnsafeMutableBufferPointer<Float>, frequency: Double, volume: Float) {
+        let angularFrequency = 2.0 * Double.pi * frequency / sampleRate
+        for i in 0..<samples.count {
+            let sample = sin(angularFrequency * Double(i))
+            samples[i] = Float(sample) * volume
+        }
+    }
+
+    private func generateSquareWave(samples: UnsafeMutableBufferPointer<Float>, frequency: Double, volume: Float) {
+        let angularFrequency = 2.0 * Double.pi * frequency / sampleRate
+        for i in 0..<samples.count {
+            let sample = sin(angularFrequency * Double(i))
+            samples[i] = (sample >= 0 ? 1.0 : -1.0) * volume
+        }
+    }
+
+    private func generateTriangleWave(samples: UnsafeMutableBufferPointer<Float>, frequency: Double, volume: Float) {
+        let period = sampleRate / frequency
+        for i in 0..<samples.count {
+            let phase = Double(i).truncatingRemainder(dividingBy: period) / period
+            let sample = 4.0 * abs(phase - 0.5) - 1.0
+            samples[i] = Float(sample) * volume
+        }
+    }
+
+    private func generateSawtoothWave(samples: UnsafeMutableBufferPointer<Float>, frequency: Double, volume: Float) {
+        let period = sampleRate / frequency
+        for i in 0..<samples.count {
+            let phase = Double(i).truncatingRemainder(dividingBy: period) / period
+            let sample = 2.0 * phase - 1.0
+            samples[i] = Float(sample) * volume
+        }
+    }
+
+    private func generateWhiteNoise(samples: UnsafeMutableBufferPointer<Float>, volume: Float) {
+        for i in 0..<samples.count {
+            samples[i] = Float.random(in: -1.0...1.0) * volume
+        }
+    }
+
+    private func generatePinkNoise(samples: UnsafeMutableBufferPointer<Float>, volume: Float) {
+        // Simple pink noise approximation using white noise with filtering
+        var b0: Float = 0, b1: Float = 0, b2: Float = 0, b3: Float = 0, b4: Float = 0, b5: Float = 0, b6: Float = 0
+        for i in 0..<samples.count {
+            let white = Float.random(in: -1.0...1.0)
+            b0 = 0.99886 * b0 + white * 0.0555179
+            b1 = 0.99332 * b1 + white * 0.0750759
+            b2 = 0.96900 * b2 + white * 0.1538520
+            b3 = 0.86650 * b3 + white * 0.3104856
+            b4 = 0.55000 * b4 + white * 0.5329522
+            b5 = -0.7616 * b5 - white * 0.0168980
+            let pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362
+            b6 = white * 0.115926
+            samples[i] = pink * 0.11 * volume // Scale down as pink noise is louder
+        }
+    }
+
+    private func generateBrownNoise(samples: UnsafeMutableBufferPointer<Float>, volume: Float) {
+        // Brown noise (Brownian noise) - integrated white noise
+        for i in 0..<samples.count {
+            let white = Float.random(in: -0.1...0.1)
+            brownNoiseState = (brownNoiseState + white)
+            // Clamp to prevent drift
+            if brownNoiseState > 1.0 || brownNoiseState < -1.0 {
+                brownNoiseState *= 0.95
+            }
+            samples[i] = brownNoiseState * volume
+        }
     }
 
     func stop() {

@@ -40,6 +40,17 @@ struct BinauralBeatsView: View {
                     )
                     .disabled(viewModel.isPlaying)
 
+                    // Waveform Selection
+                    WaveformSelector(selectedWaveform: $viewModel.waveformType)
+                        .disabled(viewModel.isPlaying)
+
+                    // Waveform Visualization
+                    WaveformVisualizer(
+                        frequency: viewModel.beatFrequency,
+                        isPlaying: viewModel.isPlaying,
+                        waveformType: viewModel.waveformType
+                    )
+
                     // Volume Control
                     VolumeControl(
                         volume: $viewModel.volume,
