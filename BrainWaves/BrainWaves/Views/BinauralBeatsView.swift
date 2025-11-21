@@ -13,8 +13,9 @@ struct BinauralBeatsView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
+            ZStack {
+                ScrollView {
+                    VStack(spacing: 20) {
                     // Brainwave type indicator
                     Text(viewModel.getBrainwaveType())
                         .font(.title2)
@@ -107,9 +108,26 @@ struct BinauralBeatsView: View {
                     }
                     .disabled(viewModel.isPlaying)
 
-                    Spacer(minLength: 20)
+                        Spacer(minLength: 20)
+                    }
+                    .padding()
                 }
-                .padding()
+                .frequencySwipeGesture(
+                    frequency: $viewModel.beatFrequency,
+                    range: viewModel.beatFrequencyRange,
+                    isEnabled: !viewModel.isPlaying
+                )
+                .volumePinchGesture(
+                    volume: $viewModel.volume,
+                    onVolumeChange: viewModel.setVolume,
+                    isEnabled: true
+                )
+                .doubleTapFavorite {
+                    viewModel.showingSavePreset = true
+                }
+
+                // Gesture Feedback Overlay
+                GestureFeedbackView()
             }
             .navigationTitle("Binaural Beats")
             .sheet(isPresented: $viewModel.showingSavePreset) {

@@ -20,8 +20,9 @@ struct MultiLayerView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
+            ZStack {
+                ScrollView {
+                    VStack(spacing: 20) {
                     // Info Banner
                     VStack(spacing: 8) {
                         Image(systemName: "square.stack.3d.up.fill")
@@ -144,9 +145,24 @@ struct MultiLayerView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
 
-                    Spacer(minLength: 20)
+                        Spacer(minLength: 20)
+                    }
+                    .padding()
                 }
-                .padding()
+                .volumePinchGesture(
+                    volume: Binding(
+                        get: { layerManager.masterVolume },
+                        set: { layerManager.setMasterVolume($0) }
+                    ),
+                    onVolumeChange: { layerManager.setMasterVolume($0) },
+                    isEnabled: true
+                )
+                .doubleTapFavorite {
+                    showingSavePreset = true
+                }
+
+                // Gesture Feedback Overlay
+                GestureFeedbackView()
             }
             .navigationTitle("Multi-Layer")
             .sheet(isPresented: $showingSavePreset) {
