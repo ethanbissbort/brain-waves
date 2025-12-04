@@ -23,6 +23,7 @@ struct BinauralBeatsView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.blue)
                         .padding()
+                        .accessibilityLabel("Current brainwave type: \(viewModel.getBrainwaveType())")
 
                     // Base Frequency Control
                     FrequencyControl(
@@ -78,6 +79,8 @@ struct BinauralBeatsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("How binaural beats work: Left ear plays \(String(format: "%.1f", viewModel.baseFrequency)) hertz, right ear plays \(String(format: "%.1f", viewModel.baseFrequency + viewModel.beatFrequency)) hertz, your brain perceives a beat at \(String(format: "%.1f", viewModel.beatFrequency)) hertz")
 
                     // Timer Control
                     TimerControl(
@@ -108,6 +111,8 @@ struct BinauralBeatsView: View {
                             .cornerRadius(12)
                     }
                     .disabled(viewModel.isPlaying)
+                    .accessibilityLabel("Save current configuration as preset")
+                    .accessibilityHint("Double tap to save the current frequency, waveform, and duration settings")
 
                         Spacer(minLength: 20)
                     }

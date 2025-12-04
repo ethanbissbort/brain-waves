@@ -23,6 +23,7 @@ struct IsochronicTonesView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.purple)
                         .padding()
+                        .accessibilityLabel("Current brainwave type: \(viewModel.getBrainwaveType())")
 
                     // Carrier Frequency Control
                     FrequencyControl(
@@ -82,6 +83,8 @@ struct IsochronicTonesView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("How isochronic tones work: Carrier tone plays at \(String(format: "%.1f", viewModel.carrierFrequency)) hertz, pulsing on and off at \(String(format: "%.1f", viewModel.pulseFrequency)) hertz, creating a rhythmic pattern. No stereo headphones required")
 
                     // Timer Control
                     TimerControl(
@@ -112,6 +115,8 @@ struct IsochronicTonesView: View {
                             .cornerRadius(12)
                     }
                     .disabled(viewModel.isPlaying)
+                    .accessibilityLabel("Save current configuration as preset")
+                    .accessibilityHint("Double tap to save the current frequency, waveform, and duration settings")
 
                         Spacer(minLength: 20)
                     }

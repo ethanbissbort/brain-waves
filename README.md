@@ -85,7 +85,7 @@ Generate binaural beats and isochronic tones for meditation, focus, sleep, and c
 ### User Experience Excellence
 - **SwiftUI**: Modern, responsive interface
 - **Haptic Feedback**: Tactile confirmation for all actions
-- **Accessibility** *(In Development)*: VoiceOver and Dynamic Type support planned
+- **Accessibility**: VoiceOver labels on key controls (Basic support)
 - **Dark Mode**: Automatic theme adaptation
 - **No Ads**: Distraction-free experience
 
