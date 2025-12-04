@@ -10,6 +10,7 @@ import SwiftUI
 struct BinauralBeatsView: View {
     @StateObject private var viewModel = BinauralBeatsViewModel()
     @EnvironmentObject var presetCoordinator: PresetCoordinator
+    @ObservedObject private var milestoneManager = TimerMilestoneManager.shared
 
     var body: some View {
         NavigationView {
@@ -128,6 +129,12 @@ struct BinauralBeatsView: View {
 
                 // Gesture Feedback Overlay
                 GestureFeedbackView()
+
+                // Milestone Alert Overlay
+                MilestoneAlertView(
+                    message: milestoneManager.completionMessage,
+                    isVisible: milestoneManager.showCompletionAlert
+                )
             }
             .navigationTitle("Binaural Beats")
             .sheet(isPresented: $viewModel.showingSavePreset) {
@@ -142,6 +149,18 @@ struct BinauralBeatsView: View {
             }
             .onChange(of: presetCoordinator.selectedBinauralPreset) { _ in
                 loadPresetIfSelected()
+            }
+            .onChange(of: viewModel.currentTime) { _ in
+                let remainingTime = viewModel.remainingTime
+                milestoneManager.checkMilestone(
+                    remainingTime: remainingTime,
+                    isPlaying: viewModel.isPlaying
+                )
+
+                // Check for session completion
+                if viewModel.isPlaying && remainingTime <= 0 {
+                    milestoneManager.notifyCompletion(sessionType: "Binaural Beats")
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ import SwiftUI
 struct IsochronicTonesView: View {
     @StateObject private var viewModel = IsochronicTonesViewModel()
     @EnvironmentObject var presetCoordinator: PresetCoordinator
+    @ObservedObject private var milestoneManager = TimerMilestoneManager.shared
 
     var body: some View {
         NavigationView {
@@ -132,6 +133,12 @@ struct IsochronicTonesView: View {
 
                 // Gesture Feedback Overlay
                 GestureFeedbackView()
+
+                // Milestone Alert Overlay
+                MilestoneAlertView(
+                    message: milestoneManager.completionMessage,
+                    isVisible: milestoneManager.showCompletionAlert
+                )
             }
             .navigationTitle("Isochronic Tones")
             .sheet(isPresented: $viewModel.showingSavePreset) {
@@ -146,6 +153,18 @@ struct IsochronicTonesView: View {
             }
             .onChange(of: presetCoordinator.selectedIsochronicPreset) { _ in
                 loadPresetIfSelected()
+            }
+            .onChange(of: viewModel.currentTime) { _ in
+                let remainingTime = viewModel.remainingTime
+                milestoneManager.checkMilestone(
+                    remainingTime: remainingTime,
+                    isPlaying: viewModel.isPlaying
+                )
+
+                // Check for session completion
+                if viewModel.isPlaying && remainingTime <= 0 {
+                    milestoneManager.notifyCompletion(sessionType: "Isochronic Tones")
+                }
             }
         }
     }

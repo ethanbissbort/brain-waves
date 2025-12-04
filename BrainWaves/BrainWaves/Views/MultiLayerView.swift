@@ -16,6 +16,7 @@ struct MultiLayerView: View {
     @State private var showingSavePreset = false
     @State private var presetName = ""
 
+    private let presetStore = PresetStore.shared
     private let durationPresets: [TimeInterval] = [300, 600, 900, 1800, 3600] // 5m, 10m, 15m, 30m, 60m
 
     var body: some View {
@@ -227,8 +228,18 @@ struct MultiLayerView: View {
     // MARK: - Save Configuration
 
     private func saveConfiguration() {
-        // This would save the current layer configuration
-        // In a real implementation, this would persist to UserDefaults or a database
+        guard !presetName.isEmpty else { return }
+
+        let preset = MultiLayerPreset(
+            name: presetName,
+            layers: layerManager.layers,
+            duration: duration,
+            category: .custom,
+            tags: []
+        )
+
+        presetStore.addMultiLayerPreset(preset)
+
         Logger.shared.info("Saving multi-layer configuration: \(presetName)")
         Logger.shared.info("Layers: \(layerManager.layers.count)")
 
@@ -238,6 +249,46 @@ struct MultiLayerView: View {
 
         // Show success haptic
         HapticManager.shared.playSuccess()
+    }
+}
+
+// MARK: - Save Multi-Layer Config Sheet
+
+struct SaveMultiLayerConfigSheet: View {
+    @Binding var presetName: String
+    @Binding var isPresented: Bool
+    let onSave: () -> Void
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Save Multi-Layer Configuration")
+                    .font(.headline)
+
+                TextField("Configuration Name", text: $presetName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+
+                Button("Save") {
+                    onSave()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(presetName.isEmpty)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("New Configuration")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Cancel") {
+                        presetName = ""
+                        isPresented = false
+                    }
+                }
+            }
+        }
     }
 }
 

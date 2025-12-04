@@ -126,15 +126,15 @@ This document outlines the development roadmap for the Brain Waves iOS applicati
   - [x] Dedicated Multi-Layer tab in navigation
   - [x] Layer preset templates (Deep Meditation, Focus, Sleep)
 
-- [x] **Frequency Ramping** ✅
-  - [x] Gradually change frequency over time
-  - [x] Create frequency sweep presets
-  - [x] Implement guided meditation programs
-  - [x] Add ascending/descending ramps
+- [ ] **Frequency Ramping** ⚠️ *(UI Complete, Audio Engine Integration In Progress)*
+  - [x] Created FrequencyRampingControl UI with visual preview
+  - [x] Implemented FrequencyRampConfig data model with calculation logic
   - [x] Added ascending-descending and descending-ascending patterns
   - [x] Implemented linear, exponential, and logarithmic curves
-  - [x] Created FrequencyRampingControl UI with visual preview
   - [x] Ramping configuration persists with presets
+  - [ ] Integrate ramp config with audio generators (IN PROGRESS)
+  - [ ] Implement dynamic frequency changes during playback
+  - [ ] Test all ramp types and curves with actual audio output
 
 - [x] **Audio Effects** ✅
   - [x] Add reverb effect (wet/dry mix, room size)

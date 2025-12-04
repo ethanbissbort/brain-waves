@@ -21,7 +21,7 @@ Generate binaural beats and isochronic tones for meditation, focus, sleep, and c
 - **7 Waveform Types**: Sine, Square, Triangle, Sawtooth, White/Pink/Brown Noise
 - **Binaural Beats**: Stereo frequency difference for brainwave entrainment
 - **Isochronic Tones**: Rhythmic pulsing (no headphones required)
-- **Frequency Ramping**: Gradual frequency changes over time with 5 ramp patterns
+- **Frequency Ramping** *(Coming Soon)*: Gradual frequency changes over time with 5 ramp patterns
 - **Volume Control**: Real-time adjustment with fade-in/fade-out effects
 - **Background Playback**: Continues with screen locked
 
@@ -55,11 +55,13 @@ Generate binaural beats and isochronic tones for meditation, focus, sleep, and c
   - Start Sleep Session (2 Hz Delta)
 - **Deep Linking**: Instant session start from home screen
 
-### 🎛️ Professional Controls
+### 🎛️ Professional Controls *(Coming Soon)*
 - **Frequency Ramping**: 5 ramp types (Ascending, Descending, Ascending-Descending, etc.)
 - **3 Ramp Curves**: Linear, Exponential, Logarithmic
 - **Visual Preview**: See frequency path before starting
 - **Real-time Updates**: Smooth frequency transitions during playback
+
+*Note: UI components for frequency ramping are in place, but the audio engine integration is currently in development.*
 
 ---
 
@@ -83,7 +85,7 @@ Generate binaural beats and isochronic tones for meditation, focus, sleep, and c
 ### User Experience Excellence
 - **SwiftUI**: Modern, responsive interface
 - **Haptic Feedback**: Tactile confirmation for all actions
-- **Accessibility**: VoiceOver ready, Dynamic Type support
+- **Accessibility** *(In Development)*: VoiceOver and Dynamic Type support planned
 - **Dark Mode**: Automatic theme adaptation
 - **No Ads**: Distraction-free experience
 
@@ -104,9 +106,9 @@ Generate binaural beats and isochronic tones for meditation, focus, sleep, and c
 - **Pink Noise**: Natural 1/f spectrum (soothing, like rain)
 - **Brown Noise**: Deep, rumbling (Brownian motion)
 
-### Frequency Ramping
+### Frequency Ramping *(Coming Soon)*
 
-Create progressive sessions with automatic frequency changes:
+Create progressive sessions with automatic frequency changes (planned feature):
 
 ```
 Examples:

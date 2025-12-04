@@ -103,6 +103,7 @@ class BaseAudioGenerator: ObservableObject {
     var timer: Timer?
     var startTime: Date?
     var pausedTime: TimeInterval = 0
+    var rampConfig: FrequencyRampConfig?
 
     // Fade effect properties
     private var fadeTimer: Timer?

@@ -15,6 +15,8 @@ class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol
 
     private var baseFrequency: Double = AppConstants.Audio.Frequency.defaultBase
     private var beatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
+    private var initialBeatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
+    private var lastRampUpdateTime: TimeInterval = 0
 
     override func updateVolume() {
         leftPlayerNode?.volume = volume
@@ -58,13 +60,16 @@ class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol
         engine.prepare()
     }
 
-    func start(baseFrequency: Double, beatFrequency: Double, duration: TimeInterval) {
+    func start(baseFrequency: Double, beatFrequency: Double, duration: TimeInterval, rampConfig: FrequencyRampConfig? = nil) {
         guard !isPlaying else { return }
 
         self.baseFrequency = baseFrequency
         self.beatFrequency = beatFrequency
+        self.initialBeatFrequency = beatFrequency
         self.duration = duration
         self.currentTime = pausedTime
+        self.rampConfig = rampConfig
+        self.lastRampUpdateTime = 0
 
         do {
             try audioEngine?.start()
@@ -92,7 +97,8 @@ class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol
         start(
             baseFrequency: baseFrequency,
             beatFrequency: beatFrequency,
-            duration: duration
+            duration: duration,
+            rampConfig: rampConfig
         )
     }
 
@@ -117,7 +123,55 @@ class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol
 
     func resume() {
         guard !isPlaying else { return }
-        start(baseFrequency: baseFrequency, beatFrequency: beatFrequency, duration: duration)
+        start(baseFrequency: baseFrequency, beatFrequency: beatFrequency, duration: duration, rampConfig: rampConfig)
+    }
+
+    override func updateTime() {
+        super.updateTime()
+
+        // Check if ramping is enabled
+        guard let rampConfig = rampConfig,
+              rampConfig.enabled,
+              rampConfig.rampType != .none,
+              isPlaying else {
+            return
+        }
+
+        // Update frequency every 1 second to avoid excessive buffer regeneration
+        if currentTime - lastRampUpdateTime >= 1.0 {
+            let newBeatFrequency = rampConfig.frequency(at: currentTime, totalDuration: duration)
+
+            // Only update if frequency changed significantly (> 0.1 Hz)
+            if abs(newBeatFrequency - beatFrequency) > 0.1 {
+                beatFrequency = newBeatFrequency
+                updateFrequencies()
+                lastRampUpdateTime = currentTime
+            }
+        }
+    }
+
+    private func updateFrequencies() {
+        guard isPlaying,
+              let leftPlayer = leftPlayerNode,
+              let rightPlayer = rightPlayerNode else {
+            return
+        }
+
+        // Stop current playback
+        leftPlayer.stop()
+        rightPlayer.stop()
+
+        // Generate new buffers with updated frequencies
+        let leftBuffer = generateSineWaveBuffer(frequency: baseFrequency)
+        let rightBuffer = generateSineWaveBuffer(frequency: baseFrequency + beatFrequency)
+
+        // Schedule new buffers with looping
+        leftPlayer.scheduleBuffer(leftBuffer, at: nil, options: .loops)
+        rightPlayer.scheduleBuffer(rightBuffer, at: nil, options: .loops)
+
+        // Resume playback
+        leftPlayer.play()
+        rightPlayer.play()
     }
 
     private func scheduleBuffers() {
