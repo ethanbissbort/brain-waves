@@ -53,7 +53,8 @@ class BinauralBeatsViewModel: BaseGeneratorViewModel {
         generator.start(
             baseFrequency: baseFrequency,
             beatFrequency: beatFrequency,
-            duration: duration
+            duration: duration,
+            rampConfig: rampConfig.enabled ? rampConfig : nil
         )
         HapticManager.shared.playStart()
     }

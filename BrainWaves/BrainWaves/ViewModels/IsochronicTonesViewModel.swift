@@ -53,7 +53,8 @@ class IsochronicTonesViewModel: BaseGeneratorViewModel {
         generator.start(
             carrierFrequency: carrierFrequency,
             pulseFrequency: pulseFrequency,
-            duration: duration
+            duration: duration,
+            rampConfig: rampConfig.enabled ? rampConfig : nil
         )
         HapticManager.shared.playStart()
     }

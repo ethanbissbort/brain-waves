@@ -56,6 +56,33 @@ struct ContentView: View {
                 selectedTab = 1
             }
         }
+        .handleQuickActions { action in
+            handleQuickAction(action)
+        }
+    }
+
+    private func handleQuickAction(_ action: QuickActionType) {
+        switch action {
+        case .playLastSession:
+            // Navigate to binaural beats (default)
+            selectedTab = 0
+            HapticManager.shared.playSelection()
+
+        case .startMeditation:
+            let preset = QuickActionManager.shared.getMeditationPreset()
+            presetCoordinator.selectBinauralPreset(preset)
+            HapticManager.shared.playPresetLoad()
+
+        case .startFocus:
+            let preset = QuickActionManager.shared.getFocusPreset()
+            presetCoordinator.selectBinauralPreset(preset)
+            HapticManager.shared.playPresetLoad()
+
+        case .startSleep:
+            let preset = QuickActionManager.shared.getSleepPreset()
+            presetCoordinator.selectBinauralPreset(preset)
+            HapticManager.shared.playPresetLoad()
+        }
     }
 }
 

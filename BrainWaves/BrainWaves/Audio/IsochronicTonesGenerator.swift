@@ -14,6 +14,8 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
 
     private var carrierFrequency: Double = AppConstants.Audio.Frequency.defaultCarrier
     private var pulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
+    private var initialPulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
+    private var lastRampUpdateTime: TimeInterval = 0
 
     override func updateVolume() {
         playerNode?.volume = volume
@@ -46,13 +48,16 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
         engine.prepare()
     }
 
-    func start(carrierFrequency: Double, pulseFrequency: Double, duration: TimeInterval) {
+    func start(carrierFrequency: Double, pulseFrequency: Double, duration: TimeInterval, rampConfig: FrequencyRampConfig? = nil) {
         guard !isPlaying else { return }
 
         self.carrierFrequency = carrierFrequency
         self.pulseFrequency = pulseFrequency
+        self.initialPulseFrequency = pulseFrequency
         self.duration = duration
         self.currentTime = pausedTime
+        self.rampConfig = rampConfig
+        self.lastRampUpdateTime = 0
 
         do {
             try audioEngine?.start()
@@ -79,7 +84,8 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
         start(
             carrierFrequency: carrierFrequency,
             pulseFrequency: pulseFrequency,
-            duration: duration
+            duration: duration,
+            rampConfig: rampConfig
         )
     }
 
@@ -102,7 +108,50 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
 
     func resume() {
         guard !isPlaying else { return }
-        start(carrierFrequency: carrierFrequency, pulseFrequency: pulseFrequency, duration: duration)
+        start(carrierFrequency: carrierFrequency, pulseFrequency: pulseFrequency, duration: duration, rampConfig: rampConfig)
+    }
+
+    override func updateTime() {
+        super.updateTime()
+
+        // Check if ramping is enabled
+        guard let rampConfig = rampConfig,
+              rampConfig.enabled,
+              rampConfig.rampType != .none,
+              isPlaying else {
+            return
+        }
+
+        // Update frequency every 1 second to avoid excessive buffer regeneration
+        if currentTime - lastRampUpdateTime >= 1.0 {
+            let newPulseFrequency = rampConfig.frequency(at: currentTime, totalDuration: duration)
+
+            // Only update if frequency changed significantly (> 0.1 Hz)
+            if abs(newPulseFrequency - pulseFrequency) > 0.1 {
+                pulseFrequency = newPulseFrequency
+                updateFrequencies()
+                lastRampUpdateTime = currentTime
+            }
+        }
+    }
+
+    private func updateFrequencies() {
+        guard isPlaying,
+              let player = playerNode else {
+            return
+        }
+
+        // Stop current playback
+        player.stop()
+
+        // Generate new buffer with updated frequency
+        let buffer = generateIsochronicToneBuffer()
+
+        // Schedule new buffer with looping
+        player.scheduleBuffer(buffer, at: nil, options: .loops)
+
+        // Resume playback
+        player.play()
     }
 
     private func scheduleBuffers() {

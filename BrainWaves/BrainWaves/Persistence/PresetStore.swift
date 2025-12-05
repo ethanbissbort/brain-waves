@@ -13,10 +13,12 @@ class PresetStore: ObservableObject, PresetStoreProtocol {
 
     @Published var binauralPresets: [BinauralBeatPreset] = []
     @Published var isochronicPresets: [IsochronicTonePreset] = []
+    @Published var multiLayerPresets: [MultiLayerPreset] = []
     @Published var playlists: [Playlist] = []
 
     private let binauralPresetsKey = "saved_binaural_presets"
     private let isochronicPresetsKey = "saved_isochronic_presets"
+    private let multiLayerPresetsKey = "saved_multilayer_presets"
     private let playlistsKey = "playlists"
 
     private init() {
@@ -32,6 +34,10 @@ class PresetStore: ObservableObject, PresetStoreProtocol {
         if isochronicPresets.isEmpty {
             isochronicPresets = IsochronicTonePreset.defaultPresets
             saveIsochronicPresets()
+        }
+        if multiLayerPresets.isEmpty {
+            multiLayerPresets = MultiLayerPreset.defaultPresets
+            saveMultiLayerPresets()
         }
     }
 
@@ -127,6 +133,40 @@ class PresetStore: ObservableObject, PresetStoreProtocol {
         }
     }
 
+    // MARK: - Multi-Layer Presets
+
+    func addMultiLayerPreset(_ preset: MultiLayerPreset) {
+        multiLayerPresets.append(preset)
+        saveMultiLayerPresets()
+        Logger.shared.persistenceInfo("Added multi-layer preset: \(preset.name)")
+    }
+
+    func updateMultiLayerPreset(_ preset: MultiLayerPreset) {
+        if let index = multiLayerPresets.firstIndex(where: { $0.id == preset.id }) {
+            multiLayerPresets[index] = preset
+            saveMultiLayerPresets()
+            Logger.shared.persistenceInfo("Updated multi-layer preset: \(preset.name)")
+        }
+    }
+
+    func deleteMultiLayerPreset(_ preset: MultiLayerPreset) {
+        multiLayerPresets.removeAll { $0.id == preset.id }
+        saveMultiLayerPresets()
+    }
+
+    private func saveMultiLayerPresets() {
+        if let encoded = try? JSONEncoder().encode(multiLayerPresets) {
+            UserDefaults.standard.set(encoded, forKey: multiLayerPresetsKey)
+        }
+    }
+
+    private func loadMultiLayerPresets() {
+        if let data = UserDefaults.standard.data(forKey: multiLayerPresetsKey),
+           let decoded = try? JSONDecoder().decode([MultiLayerPreset].self, from: data) {
+            multiLayerPresets = decoded
+        }
+    }
+
     // MARK: - Playlists
 
     func addPlaylist(_ playlist: Playlist) {
@@ -178,6 +218,7 @@ class PresetStore: ObservableObject, PresetStoreProtocol {
     private func loadAll() {
         loadBinauralPresets()
         loadIsochronicPresets()
+        loadMultiLayerPresets()
         loadPlaylists()
     }
 
@@ -189,5 +230,9 @@ class PresetStore: ObservableObject, PresetStoreProtocol {
 
     func getIsochronicPreset(byId id: UUID) -> IsochronicTonePreset? {
         isochronicPresets.first { $0.id == id }
+    }
+
+    func getMultiLayerPreset(byId id: UUID) -> MultiLayerPreset? {
+        multiLayerPresets.first { $0.id == id }
     }
 }

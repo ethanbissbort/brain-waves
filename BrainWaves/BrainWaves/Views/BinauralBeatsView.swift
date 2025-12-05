@@ -10,6 +10,7 @@ import SwiftUI
 struct BinauralBeatsView: View {
     @StateObject private var viewModel = BinauralBeatsViewModel()
     @EnvironmentObject var presetCoordinator: PresetCoordinator
+    @ObservedObject private var milestoneManager = TimerMilestoneManager.shared
 
     var body: some View {
         NavigationView {
@@ -22,6 +23,7 @@ struct BinauralBeatsView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.blue)
                         .padding()
+                        .accessibilityLabel("Current brainwave type: \(viewModel.getBrainwaveType())")
 
                     // Base Frequency Control
                     FrequencyControl(
@@ -77,6 +79,8 @@ struct BinauralBeatsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("How binaural beats work: Left ear plays \(String(format: "%.1f", viewModel.baseFrequency)) hertz, right ear plays \(String(format: "%.1f", viewModel.baseFrequency + viewModel.beatFrequency)) hertz, your brain perceives a beat at \(String(format: "%.1f", viewModel.beatFrequency)) hertz")
 
                     // Timer Control
                     TimerControl(
@@ -107,6 +111,8 @@ struct BinauralBeatsView: View {
                             .cornerRadius(12)
                     }
                     .disabled(viewModel.isPlaying)
+                    .accessibilityLabel("Save current configuration as preset")
+                    .accessibilityHint("Double tap to save the current frequency, waveform, and duration settings")
 
                         Spacer(minLength: 20)
                     }
@@ -128,6 +134,12 @@ struct BinauralBeatsView: View {
 
                 // Gesture Feedback Overlay
                 GestureFeedbackView()
+
+                // Milestone Alert Overlay
+                MilestoneAlertView(
+                    message: milestoneManager.completionMessage,
+                    isVisible: milestoneManager.showCompletionAlert
+                )
             }
             .navigationTitle("Binaural Beats")
             .sheet(isPresented: $viewModel.showingSavePreset) {
@@ -142,6 +154,18 @@ struct BinauralBeatsView: View {
             }
             .onChange(of: presetCoordinator.selectedBinauralPreset) { _ in
                 loadPresetIfSelected()
+            }
+            .onChange(of: viewModel.currentTime) { _ in
+                let remainingTime = viewModel.remainingTime
+                milestoneManager.checkMilestone(
+                    remainingTime: remainingTime,
+                    isPlaying: viewModel.isPlaying
+                )
+
+                // Check for session completion
+                if viewModel.isPlaying && remainingTime <= 0 {
+                    milestoneManager.notifyCompletion(sessionType: "Binaural Beats")
+                }
             }
         }
     }

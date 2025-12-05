@@ -103,6 +103,7 @@ class BaseAudioGenerator: ObservableObject {
     var timer: Timer?
     var startTime: Date?
     var pausedTime: TimeInterval = 0
+    var rampConfig: FrequencyRampConfig?
 
     // Fade effect properties
     private var fadeTimer: Timer?
@@ -112,8 +113,14 @@ class BaseAudioGenerator: ObservableObject {
     private var fadeDuration: TimeInterval = 0
     private var isFading = false
 
-    // Noise generation state
+    // Noise generation state (thread-safe)
     private var brownNoiseState: Float = 0
+    private let brownNoiseLock = NSLock()
+
+    // Waveform buffer cache for performance optimization
+    private var bufferCache: [String: AVAudioPCMBuffer] = [:]
+    private let cacheLock = NSLock()
+    private let maxCacheSize = 10 // Limit cache to prevent memory issues
 
     init() {
         setupAudioEngine()
@@ -280,6 +287,23 @@ class BaseAudioGenerator: ObservableObject {
     ///   - waveformType: The type of waveform to generate
     /// - Returns: An `AVAudioPCMBuffer` containing the generated waveform
     func generateWaveBuffer(frequency: Double, volume: Float, waveformType: AppConstants.WaveformType) -> AVAudioPCMBuffer {
+        // Don't cache noise - it should be random
+        let shouldCache = ![AppConstants.WaveformType.whiteNoise, .pinkNoise, .brownNoise].contains(waveformType)
+
+        // Create cache key (round frequency to 0.1 Hz precision to improve cache hits)
+        let cacheKey = shouldCache ? "\(Int(frequency * 10))_\(Int(volume * 100))_\(waveformType.rawValue)" : ""
+
+        // Check cache
+        if shouldCache {
+            cacheLock.lock()
+            if let cachedBuffer = bufferCache[cacheKey] {
+                cacheLock.unlock()
+                return cachedBuffer
+            }
+            cacheLock.unlock()
+        }
+
+        // Generate new buffer
         let format = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: sampleRate,
@@ -312,6 +336,17 @@ class BaseAudioGenerator: ObservableObject {
             generatePinkNoise(samples: samples, volume: volume)
         case .brownNoise:
             generateBrownNoise(samples: samples, volume: volume)
+        }
+
+        // Store in cache if applicable
+        if shouldCache {
+            cacheLock.lock()
+            // Implement simple LRU by clearing cache if too large
+            if bufferCache.count >= maxCacheSize {
+                bufferCache.removeAll()
+            }
+            bufferCache[cacheKey] = buffer
+            cacheLock.unlock()
         }
 
         return buffer
@@ -380,12 +415,18 @@ class BaseAudioGenerator: ObservableObject {
         // Brown noise (Brownian noise) - integrated white noise
         for i in 0..<samples.count {
             let white = Float.random(in: -0.1...0.1)
+
+            // Thread-safe access to brownNoiseState
+            brownNoiseLock.lock()
             brownNoiseState = (brownNoiseState + white)
             // Clamp to prevent drift
             if brownNoiseState > 1.0 || brownNoiseState < -1.0 {
                 brownNoiseState *= 0.95
             }
-            samples[i] = brownNoiseState * volume
+            let sample = brownNoiseState * volume
+            brownNoiseLock.unlock()
+
+            samples[i] = sample
         }
     }
 
