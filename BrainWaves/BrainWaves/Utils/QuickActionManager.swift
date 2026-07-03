@@ -95,6 +95,7 @@ class QuickActionManager: ObservableObject {
 
     // MARK: - Handle Action
 
+    @discardableResult
     func handleQuickAction(_ shortcutItem: UIApplicationShortcutItem) -> Bool {
         guard let actionType = QuickActionType(rawValue: shortcutItem.type) else {
             return false

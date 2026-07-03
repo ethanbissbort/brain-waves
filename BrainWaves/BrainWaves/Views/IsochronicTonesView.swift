@@ -147,7 +147,7 @@ struct IsochronicTonesView: View {
             }
             .navigationTitle("Isochronic Tones")
             .sheet(isPresented: $viewModel.showingSavePreset) {
-                SaveIsochronicPresetSheet(
+                SavePresetSheet(
                     presetName: $viewModel.presetName,
                     isPresented: $viewModel.showingSavePreset,
                     onSave: viewModel.savePreset
@@ -178,44 +178,6 @@ struct IsochronicTonesView: View {
         if let preset = presetCoordinator.selectedIsochronicPreset {
             viewModel.loadPreset(preset)
             presetCoordinator.clearIsochronicPreset()
-        }
-    }
-}
-
-struct SaveIsochronicPresetSheet: View {
-    @Binding var presetName: String
-    @Binding var isPresented: Bool
-    let onSave: () -> Void
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("Save Current Settings")
-                    .font(.headline)
-
-                TextField("Preset Name", text: $presetName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-
-                Button("Save") {
-                    onSave()
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(presetName.isEmpty)
-
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("New Preset")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Cancel") {
-                        presetName = ""
-                        isPresented = false
-                    }
-                }
-            }
         }
     }
 }

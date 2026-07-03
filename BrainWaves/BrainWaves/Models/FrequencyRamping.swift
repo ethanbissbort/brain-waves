@@ -37,6 +37,12 @@ struct FrequencyRampConfig: Codable, Equatable {
         }
 
         let effectiveRampDuration = min(rampDuration, totalDuration)
+
+        // Avoid division by zero (which would yield NaN/Inf frequencies) for degenerate durations.
+        guard effectiveRampDuration > 0 else {
+            return startFrequency
+        }
+
         let progress = min(time / effectiveRampDuration, 1.0)
 
         switch rampType {
@@ -61,14 +67,15 @@ struct FrequencyRampConfig: Codable, Equatable {
             }
 
         case .descendingAscending:
-            // First half descends, second half ascends
+            // Mirror of ascendingDescending: first half descends (end -> start),
+            // second half ascends (start -> end).
             let halfDuration = effectiveRampDuration / 2
             if time < halfDuration {
                 let halfProgress = time / halfDuration
-                return interpolate(from: startFrequency, to: endFrequency, progress: halfProgress)
+                return interpolate(from: endFrequency, to: startFrequency, progress: halfProgress)
             } else {
                 let halfProgress = (time - halfDuration) / halfDuration
-                return interpolate(from: endFrequency, to: startFrequency, progress: halfProgress)
+                return interpolate(from: startFrequency, to: endFrequency, progress: halfProgress)
             }
         }
     }

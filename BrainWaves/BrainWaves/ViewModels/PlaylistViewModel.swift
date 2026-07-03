@@ -19,6 +19,11 @@ class PlaylistViewModel: ObservableObject {
     private var binauralGenerator = BinauralBeatsGenerator()
     private var isochronicGenerator = IsochronicTonesGenerator()
     private var cancellables = Set<AnyCancellable>()
+    private var completionTimer: Timer?
+
+    deinit {
+        completionTimer?.invalidate()
+    }
 
     func createPlaylist(name: String) {
         let playlist = Playlist(name: name)
@@ -64,6 +69,8 @@ class PlaylistViewModel: ObservableObject {
     }
 
     func stopPlaylist() {
+        completionTimer?.invalidate()
+        completionTimer = nil
         binauralGenerator.stop()
         isochronicGenerator.stop()
         isPlayingPlaylist = false
@@ -108,7 +115,8 @@ class PlaylistViewModel: ObservableObject {
         )
 
         // Monitor completion
-        Timer.scheduledTimer(withTimeInterval: preset.duration, repeats: false) { [weak self] _ in
+        completionTimer?.invalidate()
+        completionTimer = Timer.scheduledTimer(withTimeInterval: preset.duration, repeats: false) { [weak self] _ in
             self?.playNextItem()
         }
     }
@@ -124,7 +132,8 @@ class PlaylistViewModel: ObservableObject {
         )
 
         // Monitor completion
-        Timer.scheduledTimer(withTimeInterval: preset.duration, repeats: false) { [weak self] _ in
+        completionTimer?.invalidate()
+        completionTimer = Timer.scheduledTimer(withTimeInterval: preset.duration, repeats: false) { [weak self] _ in
             self?.playNextItem()
         }
     }

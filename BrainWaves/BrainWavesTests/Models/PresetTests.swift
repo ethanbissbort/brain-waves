@@ -175,17 +175,13 @@ final class PresetTests: XCTestCase {
             modifiedDate: Date()
         )
 
-        let item = PlaylistItem(
-            id: UUID(),
-            presetId: UUID(),
-            type: .binaural,
-            order: 0
-        )
-
-        playlist.addItem(item)
+        let presetId = UUID()
+        playlist.addItem(presetId: presetId, type: .binaural)
 
         XCTAssertEqual(playlist.items.count, 1)
-        XCTAssertEqual(playlist.items[0].id, item.id)
+        XCTAssertEqual(playlist.items[0].presetId, presetId)
+        XCTAssertEqual(playlist.items[0].type, .binaural)
+        XCTAssertEqual(playlist.items[0].order, 0)
     }
 
     func testPlaylistRemoveItem() {
@@ -204,7 +200,7 @@ final class PresetTests: XCTestCase {
             modifiedDate: Date()
         )
 
-        playlist.removeItem(withId: item.id)
+        playlist.removeItem(at: 0)
 
         XCTAssertTrue(playlist.items.isEmpty)
     }
@@ -216,6 +212,8 @@ final class PresetTests: XCTestCase {
             PlaylistItem(id: UUID(), presetId: UUID(), type: .binaural, order: 2)
         ]
 
+        let firstPresetId = items[0].presetId
+
         var playlist = Playlist(
             id: UUID(),
             name: "Test Playlist",
@@ -226,9 +224,37 @@ final class PresetTests: XCTestCase {
 
         playlist.moveItem(from: 0, to: 2)
 
+        // Orders are always reindexed to be contiguous...
         XCTAssertEqual(playlist.items[0].order, 0)
         XCTAssertEqual(playlist.items[1].order, 1)
         XCTAssertEqual(playlist.items[2].order, 2)
+
+        // ...and the moved item actually lands at the new position.
+        XCTAssertEqual(playlist.items[2].presetId, firstPresetId)
+    }
+
+    func testPlaylistMoveItemToEndDoesNotCrash() {
+        let items = [
+            PlaylistItem(id: UUID(), presetId: UUID(), type: .binaural, order: 0),
+            PlaylistItem(id: UUID(), presetId: UUID(), type: .binaural, order: 1),
+            PlaylistItem(id: UUID(), presetId: UUID(), type: .binaural, order: 2)
+        ]
+        let firstPresetId = items[0].presetId
+
+        var playlist = Playlist(
+            id: UUID(),
+            name: "Test Playlist",
+            items: items,
+            createdDate: Date(),
+            modifiedDate: Date()
+        )
+
+        // `to` equal to items.count is a valid "move to end" request (e.g. from SwiftUI onMove);
+        // it must not trap on the post-removal insertion index.
+        playlist.moveItem(from: 0, to: 3)
+
+        XCTAssertEqual(playlist.items.count, 3)
+        XCTAssertEqual(playlist.items[2].presetId, firstPresetId)
     }
 
     func testPlaylistCoding() throws {
@@ -251,5 +277,77 @@ final class PresetTests: XCTestCase {
         XCTAssertEqual(decodedPlaylist.id, playlist.id)
         XCTAssertEqual(decodedPlaylist.name, playlist.name)
         XCTAssertEqual(decodedPlaylist.items.count, playlist.items.count)
+    }
+
+    // MARK: - Legacy (pre-Phase-2) Decoding Tests
+
+    // These lock in backward-compatibility: data saved before waveformType/rampConfig/category/tags
+    // and the playlist playback settings existed must still decode (previously it threw keyNotFound
+    // and the store's `try?` silently discarded all of the user's saved data).
+
+    func testBinauralBeatPresetDecodesLegacyDataWithoutPhase2Fields() throws {
+        let legacyJSON = """
+        {
+            "id": "11111111-1111-1111-1111-111111111111",
+            "name": "Legacy Preset",
+            "baseFrequency": 200,
+            "beatFrequency": 10,
+            "duration": 600
+        }
+        """
+        let data = Data(legacyJSON.utf8)
+
+        let preset = try JSONDecoder().decode(BinauralBeatPreset.self, from: data)
+
+        XCTAssertEqual(preset.name, "Legacy Preset")
+        XCTAssertEqual(preset.baseFrequency, 200)
+        XCTAssertEqual(preset.beatFrequency, 10)
+        XCTAssertEqual(preset.waveformType, .sine)
+        XCTAssertEqual(preset.category, .custom)
+        XCTAssertTrue(preset.tags.isEmpty)
+        XCTAssertNil(preset.rampConfig)
+    }
+
+    func testIsochronicTonePresetDecodesLegacyDataWithoutPhase2Fields() throws {
+        let legacyJSON = """
+        {
+            "id": "22222222-2222-2222-2222-222222222222",
+            "name": "Legacy Iso",
+            "carrierFrequency": 250,
+            "pulseFrequency": 10,
+            "duration": 600
+        }
+        """
+        let data = Data(legacyJSON.utf8)
+
+        let preset = try JSONDecoder().decode(IsochronicTonePreset.self, from: data)
+
+        XCTAssertEqual(preset.name, "Legacy Iso")
+        XCTAssertEqual(preset.carrierFrequency, 250)
+        XCTAssertEqual(preset.pulseFrequency, 10)
+        XCTAssertEqual(preset.waveformType, .sine)
+        XCTAssertEqual(preset.category, .custom)
+        XCTAssertTrue(preset.tags.isEmpty)
+        XCTAssertNil(preset.rampConfig)
+    }
+
+    func testPlaylistDecodesLegacyDataWithoutPlaybackSettings() throws {
+        let legacyJSON = """
+        {
+            "id": "33333333-3333-3333-3333-333333333333",
+            "name": "Legacy Playlist",
+            "items": [],
+            "createdDate": 700000000,
+            "modifiedDate": 700000000
+        }
+        """
+        let data = Data(legacyJSON.utf8)
+
+        let playlist = try JSONDecoder().decode(Playlist.self, from: data)
+
+        XCTAssertEqual(playlist.name, "Legacy Playlist")
+        XCTAssertFalse(playlist.shuffleEnabled)
+        XCTAssertEqual(playlist.repeatMode, .off)
+        XCTAssertEqual(playlist.crossfadeDuration, 3.0)
     }
 }

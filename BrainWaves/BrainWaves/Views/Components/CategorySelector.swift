@@ -18,7 +18,7 @@ struct CategorySelector: View {
             // Header
             HStack {
                 Image(systemName: selectedCategory.icon)
-                    .foregroundColor(colorForCategory(selectedCategory))
+                    .foregroundColor(selectedCategory.displayColor)
                 Text("Category & Tags")
                     .font(.headline)
                 Spacer()
@@ -113,19 +113,6 @@ struct CategorySelector: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         )
     }
-
-    private func colorForCategory(_ category: AppConstants.PresetCategory) -> Color {
-        switch category.color {
-        case "indigo": return .indigo
-        case "purple": return .purple
-        case "blue": return .blue
-        case "green": return .green
-        case "orange": return .orange
-        case "yellow": return .yellow
-        case "cyan": return .cyan
-        default: return .gray
-        }
-    }
 }
 
 struct CategoryButton: View {
@@ -138,7 +125,7 @@ struct CategoryButton: View {
             VStack(spacing: 4) {
                 Image(systemName: category.icon)
                     .font(.title3)
-                    .foregroundColor(isSelected ? .white : colorForCategory(category))
+                    .foregroundColor(isSelected ? .white : category.displayColor)
                 Text(category.rawValue)
                     .font(.caption2)
                     .fontWeight(isSelected ? .semibold : .regular)
@@ -148,14 +135,17 @@ struct CategoryButton: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? colorForCategory(category) : Color(.secondarySystemBackground))
+                    .fill(isSelected ? category.displayColor : Color(.secondarySystemBackground))
             )
         }
         .buttonStyle(PlainButtonStyle())
     }
+}
 
-    private func colorForCategory(_ category: AppConstants.PresetCategory) -> Color {
-        switch category.color {
+fileprivate extension AppConstants.PresetCategory {
+    /// SwiftUI color derived from the category's string color identifier.
+    var displayColor: Color {
+        switch color {
         case "indigo": return .indigo
         case "purple": return .purple
         case "blue": return .blue

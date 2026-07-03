@@ -87,12 +87,23 @@ struct DataValidator {
         // Validate name
         try validateName(playlist.name)
 
-        // Check if playlist is empty
+        // Check if playlist is empty (a playlist must contain items to be playable)
         if playlist.items.isEmpty {
             throw ValidationError.emptyPlaylist
         }
 
-        // Validate item order
+        try validateItemOrder(of: playlist)
+    }
+
+    /// Validation used when persisting a playlist. Empty playlists are permitted
+    /// here because they are created empty and populated later; emptiness is a
+    /// playback concern enforced by `validate(playlist:)` and `playPlaylist`.
+    static func validateForStorage(playlist: Playlist) throws {
+        try validateName(playlist.name)
+        try validateItemOrder(of: playlist)
+    }
+
+    private static func validateItemOrder(of playlist: Playlist) throws {
         let orders = playlist.items.map { $0.order }
         let expectedOrders = Array(0..<playlist.items.count)
         if Set(orders) != Set(expectedOrders) {

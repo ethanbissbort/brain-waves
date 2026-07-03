@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AVFoundation
 
 enum AppConstants {
 
@@ -51,10 +52,7 @@ enum AppConstants {
     // MARK: - UI Configuration
 
     enum UI {
-        static let frequencyStep: Double = 0.5
         static let cornerRadius: CGFloat = 12
-        static let standardPadding: CGFloat = 16
-        static let componentSpacing: CGFloat = 20
     }
 
     // MARK: - Persistence Keys
@@ -63,7 +61,6 @@ enum AppConstants {
         static let binauralPresetsKey = "saved_binaural_presets"
         static let isochronicPresetsKey = "saved_isochronic_presets"
         static let playlistsKey = "playlists"
-        static let lastUsedSettingsKey = "last_used_settings"
         static let volumePreferenceKey = "user_volume_preference"
     }
 

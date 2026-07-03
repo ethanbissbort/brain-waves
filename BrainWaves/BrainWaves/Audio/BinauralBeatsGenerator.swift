@@ -15,7 +15,6 @@ class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol
 
     private var baseFrequency: Double = AppConstants.Audio.Frequency.defaultBase
     private var beatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
-    private var initialBeatFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
     private var lastRampUpdateTime: TimeInterval = 0
 
     override func updateVolume() {
@@ -65,7 +64,6 @@ class BinauralBeatsGenerator: BaseAudioGenerator, BinauralBeatsGeneratorProtocol
 
         self.baseFrequency = baseFrequency
         self.beatFrequency = beatFrequency
-        self.initialBeatFrequency = beatFrequency
         self.duration = duration
         self.currentTime = pausedTime
         self.rampConfig = rampConfig
