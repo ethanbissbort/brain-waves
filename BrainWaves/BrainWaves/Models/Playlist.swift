@@ -73,6 +73,26 @@ struct Playlist: Codable, Identifiable, Equatable {
         self.crossfadeDuration = crossfadeDuration
     }
 
+    enum CodingKeys: String, CodingKey {
+        case id, name, items, createdDate, modifiedDate, shuffleEnabled, repeatMode, crossfadeDuration
+    }
+
+    // Custom decoding tolerates legacy playlists persisted before the shuffleEnabled/repeatMode/
+    // crossfadeDuration playback settings were introduced (Phase 2). These fields are non-optional,
+    // so the synthesized decoder would throw `keyNotFound` on old data and `try?` would silently drop
+    // every saved playlist. Missing keys fall back to the same defaults as the memberwise init.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        items = try container.decodeIfPresent([PlaylistItem].self, forKey: .items) ?? []
+        createdDate = try container.decodeIfPresent(Date.self, forKey: .createdDate) ?? Date()
+        modifiedDate = try container.decodeIfPresent(Date.self, forKey: .modifiedDate) ?? Date()
+        shuffleEnabled = try container.decodeIfPresent(Bool.self, forKey: .shuffleEnabled) ?? false
+        repeatMode = try container.decodeIfPresent(RepeatMode.self, forKey: .repeatMode) ?? .off
+        crossfadeDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .crossfadeDuration) ?? 3.0
+    }
+
     mutating func addItem(presetId: UUID, type: PresetType) {
         let newItem = PlaylistItem(
             presetId: presetId,
@@ -91,9 +111,12 @@ struct Playlist: Codable, Identifiable, Equatable {
     }
 
     mutating func moveItem(from: Int, to: Int) {
-        guard from < items.count && to <= items.count else { return }
+        guard from >= 0, to >= 0, from < items.count, to <= items.count else { return }
         let item = items.remove(at: from)
-        items.insert(item, at: to)
+        // After removal the array is one shorter, so an insertion index equal to the original
+        // count (a valid "move to end" request) would be out of bounds. Clamp to the new count.
+        let target = min(to, items.count)
+        items.insert(item, at: target)
         reorderItems()
         modifiedDate = Date()
     }

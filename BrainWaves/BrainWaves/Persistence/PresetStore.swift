@@ -171,7 +171,7 @@ class PresetStore: ObservableObject, PresetStoreProtocol {
 
     func addPlaylist(_ playlist: Playlist) {
         do {
-            try playlist.validate()
+            try DataValidator.validateForStorage(playlist: playlist)
             playlists.append(playlist)
             savePlaylists()
             Logger.shared.persistenceInfo("Added playlist: \(playlist.name)")
@@ -183,7 +183,7 @@ class PresetStore: ObservableObject, PresetStoreProtocol {
 
     func updatePlaylist(_ playlist: Playlist) {
         do {
-            try playlist.validate()
+            try DataValidator.validateForStorage(playlist: playlist)
             if let index = playlists.firstIndex(where: { $0.id == playlist.id }) {
                 playlists[index] = playlist
                 savePlaylists()

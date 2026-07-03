@@ -37,16 +37,16 @@ class GestureControlManager: ObservableObject {
     @Published var lastGestureDescription: String = ""
     @Published var showGestureFeedback: Bool = false
 
-    private let settingsKey = "GestureSettings"
+    private static let settingsKey = "GestureSettings"
 
-    init() {
+    private init() {
         self.settings = GestureControlManager.loadSettings()
     }
 
     // MARK: - Settings Persistence
 
     private static func loadSettings() -> GestureSettings {
-        guard let data = UserDefaults.standard.data(forKey: "GestureSettings"),
+        guard let data = UserDefaults.standard.data(forKey: settingsKey),
               let settings = try? JSONDecoder().decode(GestureSettings.self, from: data) else {
             return GestureSettings()
         }
@@ -55,7 +55,7 @@ class GestureControlManager: ObservableObject {
 
     private func saveSettings() {
         if let data = try? JSONEncoder().encode(settings) {
-            UserDefaults.standard.set(data, forKey: settingsKey)
+            UserDefaults.standard.set(data, forKey: Self.settingsKey)
         }
     }
 

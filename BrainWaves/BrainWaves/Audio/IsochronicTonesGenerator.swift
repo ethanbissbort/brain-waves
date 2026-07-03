@@ -14,7 +14,6 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
 
     private var carrierFrequency: Double = AppConstants.Audio.Frequency.defaultCarrier
     private var pulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
-    private var initialPulseFrequency: Double = AppConstants.Audio.Frequency.defaultBeat
     private var lastRampUpdateTime: TimeInterval = 0
 
     override func updateVolume() {
@@ -53,7 +52,6 @@ class IsochronicTonesGenerator: BaseAudioGenerator, IsochronicTonesGeneratorProt
 
         self.carrierFrequency = carrierFrequency
         self.pulseFrequency = pulseFrequency
-        self.initialPulseFrequency = pulseFrequency
         self.duration = duration
         self.currentTime = pausedTime
         self.rampConfig = rampConfig

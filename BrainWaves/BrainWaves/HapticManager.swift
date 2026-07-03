@@ -44,7 +44,7 @@ class HapticManager: HapticManagerProtocol {
 
     // MARK: - Private Helpers
 
-    private func playSelection() {
+    func playSelection() {
         let generator = UISelectionFeedbackGenerator()
         generator.selectionChanged()
     }
@@ -83,5 +83,13 @@ class HapticManager: HapticManagerProtocol {
 
     func playPresetLoad() {
         selectionChanged()
+    }
+
+    func playSuccess() {
+        success()
+    }
+
+    func playImpact() {
+        mediumImpact()
     }
 }

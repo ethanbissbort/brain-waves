@@ -207,14 +207,16 @@ class MultiLayerAudioManager: ObservableObject {
             try audioSession.setCategory(.playback, mode: .default)
             try audioSession.setActive(true)
 
+            // Start the engine before scheduling/playing any layer nodes.
+            // AVAudioPlayerNode.play() requires a running engine; starting layers
+            // first would tell player nodes to play while the engine is stopped.
+            if !engine.isRunning {
+                try engine.start()
+            }
+
             // Start all enabled layers
             for layer in layers where layer.isEnabled {
                 startLayerAudio(for: layer)
-            }
-
-            // Start engine
-            if !engine.isRunning {
-                try engine.start()
             }
 
             isPlaying = true
@@ -231,8 +233,10 @@ class MultiLayerAudioManager: ObservableObject {
     func stop() {
         audioEngine?.stop()
 
-        // Clean up all player nodes
-        for (id, _) in playerNodes {
+        // Clean up all player nodes.
+        // Iterate over a snapshot of the keys because stopLayerAudio(for:)
+        // mutates playerNodes, and mutating a collection while iterating it is undefined behavior.
+        for id in Array(playerNodes.keys) {
             stopLayerAudio(for: id)
         }
 

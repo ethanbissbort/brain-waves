@@ -310,52 +310,6 @@ struct TipRow: View {
     }
 }
 
-// MARK: - Save Multi-Layer Config Sheet
-
-struct SaveMultiLayerConfigSheet: View {
-    @Binding var presetName: String
-    @Binding var isPresented: Bool
-    let onSave: () -> Void
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("Save Layer Configuration")
-                    .font(.headline)
-
-                Text("This will save your current layer setup including all frequencies, waveforms, and volume levels")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-
-                TextField("Configuration Name", text: $presetName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-
-                Button("Save") {
-                    onSave()
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(presetName.isEmpty)
-
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("Save Configuration")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Cancel") {
-                        presetName = ""
-                        isPresented = false
-                    }
-                }
-            }
-        }
-    }
-}
-
 // MARK: - Preview
 
 #Preview {

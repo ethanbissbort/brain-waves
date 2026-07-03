@@ -154,6 +154,6 @@ struct IsochronicPresetsListView: View {
 
 struct PresetsView_Previews: PreviewProvider {
     static var previews: some View {
-        PresetsView()
+        PresetsView(selectedTab: .constant(0))
     }
 }

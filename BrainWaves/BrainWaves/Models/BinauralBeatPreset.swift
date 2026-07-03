@@ -38,6 +38,26 @@ struct BinauralBeatPreset: Codable, Identifiable, Equatable {
         self.tags = tags
     }
 
+    enum CodingKeys: String, CodingKey {
+        case id, name, baseFrequency, beatFrequency, duration, waveformType, rampConfig, category, tags
+    }
+
+    // Custom decoding tolerates legacy data persisted before the waveformType/rampConfig/category/tags
+    // fields were introduced (Phase 2). Missing keys fall back to the same defaults as the memberwise
+    // init, so pre-Phase-2 presets decode instead of silently failing (and being dropped by `try?`).
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        baseFrequency = try container.decode(Double.self, forKey: .baseFrequency)
+        beatFrequency = try container.decode(Double.self, forKey: .beatFrequency)
+        duration = try container.decode(TimeInterval.self, forKey: .duration)
+        waveformType = try container.decodeIfPresent(AppConstants.WaveformType.self, forKey: .waveformType) ?? .sine
+        rampConfig = try container.decodeIfPresent(FrequencyRampConfig.self, forKey: .rampConfig)
+        category = try container.decodeIfPresent(AppConstants.PresetCategory.self, forKey: .category) ?? .custom
+        tags = try container.decodeIfPresent([String].self, forKey: .tags) ?? []
+    }
+
     // Predefined therapeutic presets
     static let deepSleep = BinauralBeatPreset(
         name: "Deep Sleep (Delta)",
