@@ -110,9 +110,8 @@ final class AudioGeneratorTests: XCTestCase {
 
         let buffer = generator.generateSineWaveBuffer(frequency: frequency, volume: volume)
 
-        XCTAssertNotNil(buffer)
-        XCTAssertEqual(buffer?.frameLength, AppConstants.Audio.bufferSize)
-        XCTAssertEqual(buffer?.format.sampleRate, AppConstants.Audio.sampleRate)
+        XCTAssertEqual(buffer.frameLength, AppConstants.Audio.bufferSize)
+        XCTAssertEqual(buffer.format.sampleRate, AppConstants.Audio.sampleRate)
     }
 
     func testGenerateBufferWithDifferentFrequencies() {
@@ -131,6 +130,19 @@ final class AudioGeneratorTests: XCTestCase {
 class MockAudioGenerator: BaseAudioGenerator {
 
     func mockStart() {
+        isPlaying = true
+        startTimer()
+    }
+
+    // BaseAudioGenerator leaves pause/resume to concrete subclasses (they act on
+    // real player nodes). The mock provides the base-level state semantics so the
+    // playback-state contract can be exercised without audio hardware.
+    func pause() {
+        isPlaying = false
+        stopTimer()
+    }
+
+    func resume() {
         isPlaying = true
         startTimer()
     }
