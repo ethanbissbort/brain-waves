@@ -314,5 +314,5 @@ struct TipRow: View {
 
 #Preview {
     MultiLayerView()
-        .environmentObject(PresetCoordinator())
+        .environmentObject(PresetCoordinator.shared)
 }

@@ -79,10 +79,10 @@ protocol PresetCoordinatorProtocol: AnyObject {
 
 /// Protocol for binaural beats generator
 protocol BinauralBeatsGeneratorProtocol: AudioGenerator {
-    func start(baseFrequency: Double, beatFrequency: Double, duration: TimeInterval)
+    func start(baseFrequency: Double, beatFrequency: Double, duration: TimeInterval, rampConfig: FrequencyRampConfig?)
 }
 
 /// Protocol for isochronic tones generator
 protocol IsochronicTonesGeneratorProtocol: AudioGenerator {
-    func start(carrierFrequency: Double, pulseFrequency: Double, duration: TimeInterval)
+    func start(carrierFrequency: Double, pulseFrequency: Double, duration: TimeInterval, rampConfig: FrequencyRampConfig?)
 }
