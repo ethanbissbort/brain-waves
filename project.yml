@@ -27,3 +27,30 @@ targets:
         CODE_SIGNING_REQUIRED: NO
         # SwiftUI app: the launch screen key keeps the app full-size on device.
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
+  BrainWavesTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: BrainWaves/BrainWavesTests
+    dependencies:
+      - target: BrainWaves
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.brainwaves.BrainWavesTests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+schemes:
+  BrainWaves:
+    build:
+      targets:
+        BrainWaves: all
+        BrainWavesTests: [test]
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - BrainWavesTests
+    run:
+      config: Debug
