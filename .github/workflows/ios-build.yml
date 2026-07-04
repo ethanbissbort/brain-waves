@@ -1,0 +1,59 @@
+name: iOS Build
+
+# Compiles the app against the iOS 26 SDK (Xcode 26) with a minimum
+# deployment target of iOS 18. The committed .xcodeproj is incomplete
+# (it references only a subset of the sources), so the project is
+# regenerated from project.yml with XcodeGen before building.
+
+on:
+  push:
+    branches:
+      - claude/codebase-crawl-validate-refactor-v0eka1
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (iOS 26 SDK, min iOS 18)
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26 (iOS 26 SDK)
+        run: |
+          set -e
+          echo "Installed Xcodes:"; ls -d /Applications/Xcode*.app
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1 || true)
+          if [ -z "$XC" ]; then
+            echo "::error::No Xcode 26 found on this runner (required for the iOS 26 SDK)."
+            exit 1
+          fi
+          echo "Selecting $XC"
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+          echo "Available iOS SDKs:"; xcodebuild -showsdks | grep -i ios || true
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate --spec project.yml
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project BrainWaves.xcodeproj \
+            -scheme BrainWaves \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            IPHONEOS_DEPLOYMENT_TARGET=18.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build

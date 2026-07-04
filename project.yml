@@ -1,0 +1,29 @@
+name: BrainWaves
+options:
+  bundleIdPrefix: com.brainwaves
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  BrainWaves:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: BrainWaves/BrainWaves
+        excludes:
+          - "Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.brainwaves.BrainWaves
+        INFOPLIST_FILE: BrainWaves/BrainWaves/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        # SwiftUI app: the launch screen key keeps the app full-size on device.
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
