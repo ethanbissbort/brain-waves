@@ -1,0 +1,54 @@
+name: BrainWaves
+options:
+  bundleIdPrefix: com.brainwaves
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  BrainWaves:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: BrainWaves/BrainWaves
+        excludes:
+          - "Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.brainwaves.BrainWaves
+        INFOPLIST_FILE: BrainWaves/BrainWaves/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+  BrainWavesTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: BrainWaves/BrainWavesTests
+    dependencies:
+      - target: BrainWaves
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.brainwaves.BrainWavesTests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+schemes:
+  BrainWaves:
+    build:
+      targets:
+        BrainWaves: all
+        BrainWavesTests: [test]
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - BrainWavesTests
+    run:
+      config: Debug
