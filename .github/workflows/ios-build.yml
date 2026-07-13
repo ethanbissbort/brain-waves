@@ -1,9 +1,8 @@
 name: iOS Build
 
-# Compiles the app against the iOS 26 SDK (Xcode 26) with a minimum
-# deployment target of iOS 18. The committed .xcodeproj is incomplete
-# (it references only a subset of the sources), so the project is
-# regenerated from project.yml with XcodeGen before building.
+# Builds and tests the committed BrainWaves.xcodeproj against the iOS 26 SDK
+# (Xcode 26) with a minimum deployment target of iOS 18. This validates the
+# exact project that developers open in Xcode.
 
 on:
   push:
@@ -39,12 +38,6 @@ jobs:
           xcodebuild -version
           echo "Available iOS SDKs:"; xcodebuild -showsdks | grep -i ios || true
 
-      - name: Install XcodeGen
-        run: brew install xcodegen
-
-      - name: Generate Xcode project
-        run: xcodegen generate --spec project.yml
-
       - name: Select an available iOS Simulator
         id: sim
         run: |
@@ -61,7 +54,7 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -project BrainWaves.xcodeproj \
+            -project BrainWaves/BrainWaves.xcodeproj \
             -scheme BrainWaves \
             -configuration Debug \
             -sdk iphonesimulator \
